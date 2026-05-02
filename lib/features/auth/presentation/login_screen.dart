@@ -142,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return SafeArea(
       child: Column(
         children: [
-          _MobileHeader(lottieUrls: _lottieUrls),
+          const _MobileHeader(),
           Expanded(child: _buildFormPanel(context)),
         ],
       ),
@@ -277,28 +277,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0FDF4),
+            color: const Color(0xFFF5EEE6),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _green.withOpacity(.2)),
+            border: Border.all(color: _terra.withOpacity(.15)),
           ),
           child: Column(children: [
-            Container(
-              width: 64, height: 64,
-              decoration: BoxDecoration(
-                color: _green.withOpacity(.1),
-                shape: BoxShape.circle,
+            SizedBox(
+              height: 160,
+              child: Lottie.asset(
+                'assets/lottie/student_login.json',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 80, height: 80,
+                  decoration: BoxDecoration(
+                    color: _terra.withOpacity(.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.credit_card_rounded, color: _terra, size: 40),
+                ),
               ),
-              child: const Icon(Icons.credit_card_rounded,
-                  color: _green, size: 32),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             const Text('Connectez-vous avec votre\ncarte étudiante',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: _ink, fontSize: 16,
                     fontWeight: FontWeight.w700, height: 1.4)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Scannez le QR code imprimé sur votre carte étudiante. '
               'Il contient votre identifiant unique et vos informations d\'établissement.',
@@ -466,8 +472,7 @@ class _LeftHeroState extends State<_LeftHero> {
 
 // ── Mobile Header ──────────────────────────────────────────────────────────
 class _MobileHeader extends StatelessWidget {
-  final List<String> lottieUrls;
-  const _MobileHeader({required this.lottieUrls});
+  const _MobileHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -475,7 +480,7 @@ class _MobileHeader extends StatelessWidget {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF0D3B1E), Color(0xFF1B5E20)],
+          colors: [Color(0xFF1A0A00), _terra],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -485,15 +490,12 @@ class _MobileHeader extends StatelessWidget {
       child: Column(
         children: [
           Row(children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                color: _gold.withOpacity(.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _gold.withOpacity(.4)),
-              ),
-              child: const Icon(Icons.school_rounded, color: _gold, size: 22),
-            ),
+            Image.asset('assets/images/logo_transparent.png', width: 40, height: 40,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  'assets/images/logo.png', width: 40, height: 40,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.school_rounded, color: _gold, size: 36),
+                )),
             const SizedBox(width: 10),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Scolaris',
@@ -507,7 +509,10 @@ class _MobileHeader extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 160,
-            child: _LottieSafe(url: lottieUrls[0]),
+            child: Lottie.asset('assets/lottie/student_login.json',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.school_rounded, size: 80, color: _gold)),
           ),
           const SizedBox(height: 8),
           const Text('Bienvenue sur Scolaris',
@@ -528,20 +533,20 @@ class _BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Container(
-        width: 44, height: 44,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [_terra, _orange],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      Image.asset(
+        'assets/images/logo_transparent.png',
+        width: 48, height: 48,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/logo.png', width: 48, height: 48,
+          errorBuilder: (_, __, ___) => Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_terra, _orange]),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(child: Icon(Icons.school_rounded, color: _white, size: 26)),
           ),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(
-            color: _terra.withOpacity(.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-        child: const Center(child: Text('S',
-            style: TextStyle(color: _white, fontWeight: FontWeight.w900, fontSize: 22))),
       ),
       const SizedBox(width: 12),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

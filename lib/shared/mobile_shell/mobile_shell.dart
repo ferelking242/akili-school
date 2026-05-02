@@ -8,19 +8,25 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_theme.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../presentation/providers/auth_providers.dart';
+import '../pages/account_page.dart';
 import '../pages/notifications_page.dart';
 import '../pages/search_page.dart';
 import '../widgets/responsive_role_shell.dart';
 
-const _pageBg  = Color(0xFFF5EEE6);
-const _white   = Colors.white;
-const _ink     = Color(0xFF1A0A00);
-const _muted   = Color(0xFF7A5C44);
-const _border  = Color(0xFFDDCCBB);
-const _menuBg  = ScolarisPalette.menuBg;
-const _menuAcc = ScolarisPalette.gold;
-const _menuTxt = Color(0xFFE8DDD0);
-const _terra   = ScolarisPalette.terracotta;
+// ── Design tokens ──────────────────────────────────────────────────────────
+const _pageBg    = Color(0xFFF5EEE6);
+const _white     = Colors.white;
+const _ink       = Color(0xFF1A0A00);
+const _muted     = Color(0xFF7A5C44);
+const _terra     = ScolarisPalette.terracotta;
+const _orange    = ScolarisPalette.orange;
+const _gold      = ScolarisPalette.gold;
+const _menuAcc   = ScolarisPalette.gold;
+
+// African sidebar background — dark terracotta/brown, NOT green
+const _menuBg1   = Color(0xFF1A0A00);
+const _menuBg2   = Color(0xFF3E1A00);
+const _menuTxt   = Color(0xFFE8DDD0);
 
 const _kEdgeZone = 28.0;
 
@@ -46,7 +52,7 @@ class _MobileShellState extends ConsumerState<MobileShell>
   int _pageIndex = 0;
 
   late final AnimationController _menuCtrl;
-  late final Animation<double> _menuAnim;
+  late final Animation<double>   _menuAnim;
 
   bool   _edgeDrag       = false;
   double _dragStartX     = 0;
@@ -55,6 +61,7 @@ class _MobileShellState extends ConsumerState<MobileShell>
 
   double _scale  = 1;
   double _xShift = 0;
+  double _yShift = 0;
   double _radius = 0;
 
   bool get _menuOpen => _menuCtrl.value > 0.01;
@@ -63,7 +70,7 @@ class _MobileShellState extends ConsumerState<MobileShell>
   void initState() {
     super.initState();
     _menuCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 320));
+        vsync: this, duration: const Duration(milliseconds: 340));
     _menuAnim = CurvedAnimation(
         parent: _menuCtrl,
         curve: Curves.easeOutCubic,
@@ -74,8 +81,9 @@ class _MobileShellState extends ConsumerState<MobileShell>
   void _onAnim() {
     final t = _menuAnim.value;
     setState(() {
-      _scale  = 1 - 0.12 * t;
-      _xShift = 0.65 * t;
+      _scale  = 1 - 0.10 * t;
+      _xShift = 0.68 * t;
+      _yShift = 0.05 * t;   // slight downward push so sidebar top icons are visible
       _radius = 28 * t;
     });
   }
@@ -137,6 +145,12 @@ class _MobileShellState extends ConsumerState<MobileShell>
             title: 'Recherche', child: SearchPage())));
   }
 
+  void _openAccount() {
+    if (_menuOpen) _closeMenu();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const AccountPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -148,61 +162,77 @@ class _MobileShellState extends ConsumerState<MobileShell>
       onHorizontalDragEnd: _onDragEnd,
       behavior: HitTestBehavior.translucent,
       child: Scaffold(
-        backgroundColor: _menuBg,
+        backgroundColor: _menuBg1,
         body: Stack(
           clipBehavior: Clip.none,
           children: [
-            // 1 ─ Slide-menu panel
+            // 1 ─ Sidebar panel
             Positioned.fill(
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: _SlideMenuPanel(
+                child: _SidebarPanel(
                   entries: widget.drawerEntries,
                   user: user,
                   onSelect: (key) { _closeMenu(); _navigateTo(key); },
                   onSignOut: () => ref.read(signOutUseCaseProvider)(),
+                  onAccount: _openAccount,
+                  onClose: _closeMenu,
                   opacity: _menuCtrl.value,
                   width: size.width * 0.72,
+                  role: widget.role,
                 ),
               ),
             ),
 
-            // 2 ─ Main content card
+            // 2 ─ Main card with shadow
             Transform(
               transform: Matrix4.identity()
-                ..translate(size.width * _xShift, 0.0)
+                ..translate(size.width * _xShift, size.height * _yShift)
                 ..scale(_scale),
               alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: _menuOpen ? _closeMenu : null,
-                behavior: HitTestBehavior.translucent,
-                child: ClipRRect(
+              child: Container(
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(_radius),
-                  child: Scaffold(
-                    backgroundColor: _pageBg,
-                    body: SafeArea(
-                      bottom: true,
-                      child: Column(children: [
-                        _SmartHeader(
-                          title: widget.title,
-                          user: user,
-                          onMenu: _toggleMenu,
-                          onSearch: _openSearch,
-                          onNotifications: _openNotifications,
-                          pageIndex: _pageIndex,
-                          entries: widget.drawerEntries,
-                          onTabTap: (i) {
-                            if (_menuOpen) _closeMenu();
-                            setState(() => _pageIndex = i);
-                          },
-                        ),
-                        Expanded(
-                          child: KeyedSubtree(
-                            key: ValueKey(_pageIndex),
-                            child: widget.drawerEntries[_pageIndex].page,
+                  boxShadow: _menuOpen ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.35),
+                      blurRadius: 32,
+                      offset: const Offset(-8, 0),
+                    ),
+                  ] : [],
+                ),
+                child: GestureDetector(
+                  onTap: _menuOpen ? _closeMenu : null,
+                  behavior: HitTestBehavior.translucent,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(_radius),
+                    child: Scaffold(
+                      backgroundColor: _pageBg,
+                      body: SafeArea(
+                        bottom: true,
+                        child: Column(children: [
+                          _SmartHeader(
+                            title: widget.title,
+                            user: user,
+                            onMenu: _toggleMenu,
+                            onSearch: _openSearch,
+                            onNotifications: _openNotifications,
+                            onAccount: _openAccount,
+                            pageIndex: _pageIndex,
+                            entries: widget.drawerEntries,
+                            onTabTap: (i) {
+                              if (_menuOpen) _closeMenu();
+                              setState(() => _pageIndex = i);
+                            },
                           ),
-                        ),
-                      ]),
+                          Expanded(
+                            child: KeyedSubtree(
+                              key: ValueKey(_pageIndex),
+                              child: widget.drawerEntries[_pageIndex].page,
+                            ),
+                          ),
+                        ]),
+                      ),
                     ),
                   ),
                 ),
@@ -232,7 +262,7 @@ class _FullPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5EEE6),
+      backgroundColor: _pageBg,
       body: SafeArea(
         child: Column(children: [
           Container(
@@ -262,13 +292,14 @@ class _FullPage extends StatelessWidget {
   }
 }
 
-// ─── Smart Header with inline tab nav ─────────────────────────────────────
+// ─── Smart Header ─────────────────────────────────────────────────────────
 class _SmartHeader extends StatelessWidget {
   final String title;
   final AppUser? user;
   final VoidCallback onMenu;
   final VoidCallback onSearch;
   final VoidCallback onNotifications;
+  final VoidCallback onAccount;
   final int pageIndex;
   final List<RoleNavEntry> entries;
   final ValueChanged<int> onTabTap;
@@ -276,7 +307,7 @@ class _SmartHeader extends StatelessWidget {
   const _SmartHeader({
     required this.title, required this.user,
     required this.onMenu, required this.onSearch,
-    required this.onNotifications,
+    required this.onNotifications, required this.onAccount,
     required this.pageIndex, required this.entries,
     required this.onTabTap,
   });
@@ -284,38 +315,29 @@ class _SmartHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = (user?.fullName.isNotEmpty ?? false)
-        ? user!.fullName.substring(0, math.min(2, user!.fullName.length))
+        ? user!.fullName.split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase()
         : '?';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Top row
+        // ── Top bar ──────────────────────────────────────────────────────
         Container(
           height: 56,
           color: _white,
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Row(children: [
             _HeaderBtn(onTap: onMenu, child: const _HamburgerIcon()),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(7),
-              child: Image.asset('assets/images/logo.png', width: 26, height: 26,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 26, height: 26,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [_terra, ScolarisPalette.orange]),
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: const Center(child: Text('S',
-                        style: TextStyle(color: _white, fontSize: 13,
-                            fontWeight: FontWeight.w800))),
-                  )),
-            ),
+            Image.asset('assets/images/logo_transparent.png', width: 28, height: 28,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  'assets/images/logo.png', width: 28, height: 28,
+                  errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.school_rounded, size: 26, color: _terra),
+                )),
             const SizedBox(width: 7),
             Text(AppConfig.appName,
                 style: const TextStyle(fontSize: 14, color: _ink,
-                    fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                    fontWeight: FontWeight.w800, letterSpacing: -0.3)),
             const Spacer(),
             _HeaderBtn(onTap: onSearch,
                 child: const Icon(Icons.search_rounded, size: 20, color: _muted)),
@@ -323,40 +345,37 @@ class _SmartHeader extends StatelessWidget {
               onTap: onNotifications,
               child: Stack(clipBehavior: Clip.none, children: [
                 const Icon(Icons.notifications_outlined, size: 20, color: _muted),
-                Positioned(
-                  top: -2, right: -2,
-                  child: Container(
-                    width: 7, height: 7,
-                    decoration: const BoxDecoration(color: _terra, shape: BoxShape.circle),
-                  ),
-                ),
+                Positioned(top: -2, right: -2,
+                  child: Container(width: 7, height: 7,
+                      decoration: const BoxDecoration(color: _terra, shape: BoxShape.circle))),
               ]),
             ),
+            // Account avatar button
             GestureDetector(
-              onTap: () {},
+              onTap: onAccount,
               child: Container(
-                width: 30, height: 30,
+                width: 32, height: 32,
                 margin: const EdgeInsets.only(left: 2, right: 6),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [_terra, ScolarisPalette.orange],
+                    colors: [_terra, _orange],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: [BoxShadow(
-                      color: _terra.withOpacity(.25),
+                      color: _terra.withOpacity(.3),
                       blurRadius: 6, offset: const Offset(0, 2))],
                 ),
-                child: Center(child: Text(initials.toUpperCase(),
-                    style: const TextStyle(color: _white, fontSize: 10.5,
-                        fontWeight: FontWeight.w700))),
+                child: Center(child: Text(initials,
+                    style: const TextStyle(color: _white, fontSize: 11,
+                        fontWeight: FontWeight.w800))),
               ),
             ),
           ]),
         ),
 
-        // Scrollable tab nav bar (replaces dock)
+        // ── Tab nav bar ───────────────────────────────────────────────────
         Container(
           color: _white,
           height: 44,
@@ -446,36 +465,41 @@ class _EdgeBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: _terra.withOpacity(.85),
           shape: BoxShape.circle,
-          boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 12,
-              offset: Offset(2, 2))],
+          boxShadow: const [BoxShadow(
+              color: Color(0x33000000), blurRadius: 12, offset: Offset(2, 2))],
         ),
-        child: const Center(child: Icon(Icons.chevron_right_rounded,
-            size: 26, color: _white)),
+        child: const Center(
+            child: Icon(Icons.chevron_right_rounded, size: 26, color: _white)),
       ),
     );
   }
 }
 
-// ─── Slide Menu Panel ─────────────────────────────────────────────────────
-class _SlideMenuPanel extends StatefulWidget {
+// ─── Sidebar Panel — African dark brown theme ─────────────────────────────
+class _SidebarPanel extends StatefulWidget {
   final List<RoleNavEntry> entries;
   final AppUser? user;
   final ValueChanged<String> onSelect;
   final VoidCallback onSignOut;
+  final VoidCallback onAccount;
+  final VoidCallback onClose;
   final double opacity;
   final double width;
+  final UserRole role;
 
-  const _SlideMenuPanel({
+  const _SidebarPanel({
     required this.entries, required this.user,
     required this.onSelect, required this.onSignOut,
+    required this.onAccount, required this.onClose,
     required this.opacity, required this.width,
+    required this.role,
   });
 
   @override
-  State<_SlideMenuPanel> createState() => _SlideMenuPanelState();
+  State<_SidebarPanel> createState() => _SidebarPanelState();
 }
 
-class _SlideMenuPanelState extends State<_SlideMenuPanel> {
+class _SidebarPanelState extends State<_SidebarPanel> {
   String _activeKey = '';
 
   @override
@@ -484,11 +508,24 @@ class _SlideMenuPanelState extends State<_SlideMenuPanel> {
     if (widget.entries.isNotEmpty) _activeKey = widget.entries.first.labelKey;
   }
 
+  List<_NavGroup> get _groups {
+    final entries = widget.entries;
+    if (entries.isEmpty) return [];
+    // Group entries into sections of up to 4
+    final main   = entries.take(math.min(4, entries.length)).toList();
+    final rest   = entries.skip(main.length).toList();
+    return [
+      _NavGroup(labelKey: 'nav.main',    entries: main),
+      if (rest.isNotEmpty)
+        _NavGroup(labelKey: 'nav.other', entries: rest),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
     final initials = (user?.fullName.isNotEmpty ?? false)
-        ? user!.fullName.substring(0, math.min(2, user.fullName.length)).toUpperCase()
+        ? user!.fullName.split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase()
         : '?';
 
     return SizedBox(
@@ -496,116 +533,165 @@ class _SlideMenuPanelState extends State<_SlideMenuPanel> {
       child: Opacity(
         opacity: widget.opacity.clamp(0.0, 1.0),
         child: Container(
-          color: _menuBg,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 16, 0),
-                  child: Row(children: [
-                    Container(
-                      width: 44, height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_menuAcc, _terra],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_menuBg1, _menuBg2],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Stack(children: [
+            // Subtle African pattern background
+            CustomPaint(painter: _SidebarPatternPainter(), child: const SizedBox.expand()),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top: account icon + X ──────────────────────────────
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 16, 12),
+                    child: Row(children: [
+                      // Account circle icon
+                      GestureDetector(
+                        onTap: widget.onAccount,
+                        child: Container(
+                          width: 44, height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _white.withOpacity(.12),
+                            border: Border.all(color: _gold.withOpacity(.4), width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(initials,
+                                style: const TextStyle(color: _white,
+                                    fontWeight: FontWeight.w800, fontSize: 16)),
+                          ),
                         ),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: _menuAcc.withOpacity(.5), width: 2),
                       ),
-                      child: Center(child: Text(initials,
-                          style: const TextStyle(color: _white,
-                              fontWeight: FontWeight.w800, fontSize: 16))),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(user?.fullName ?? 'Utilisateur',
-                            maxLines: 1, overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: _white,
-                                fontWeight: FontWeight.w700, fontSize: 14)),
-                        Text(user?.email ?? '',
-                            maxLines: 1, overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: _menuTxt.withOpacity(.6), fontSize: 11)),
-                      ]),
-                    ),
-                    GestureDetector(
-                      onTap: () => widget.onSelect(_activeKey),
-                      child: Container(
-                        width: 30, height: 30,
-                        decoration: BoxDecoration(
-                            color: _white.withOpacity(.08), shape: BoxShape.circle),
-                        child: const Icon(Icons.close_rounded, color: _white, size: 16),
+                      const Spacer(),
+                      // X close button
+                      GestureDetector(
+                        onTap: widget.onClose,
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: _white.withOpacity(.10),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close_rounded, color: _white, size: 18),
+                        ),
                       ),
-                    ),
-                  ]),
-                ),
-              ),
-              if (user != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: _menuAcc.withOpacity(.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _menuAcc.withOpacity(.3)),
-                    ),
-                    child: Text(user.role.name.toUpperCase(),
-                        style: const TextStyle(color: _menuAcc,
-                            fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+                    ]),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-                child: Container(height: 1, color: _white.withOpacity(.08)),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: widget.entries.length,
-                  itemBuilder: (ctx, i) {
-                    final e        = widget.entries[i];
-                    final selected = e.labelKey == _activeKey;
-                    return _AnimatedMenuItem(
-                      entry: e, selected: selected,
-                      index: i, opacity: widget.opacity,
-                      onTap: () {
-                        setState(() => _activeKey = e.labelKey);
-                        widget.onSelect(e.labelKey);
-                      },
-                    );
-                  },
+
+                // ── Role badge ─────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _gold.withOpacity(.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _gold.withOpacity(.3)),
+                    ),
+                    child: Text(
+                      (widget.user?.role.name ?? 'user').toUpperCase(),
+                      style: const TextStyle(color: _gold, fontSize: 10,
+                          fontWeight: FontWeight.w800, letterSpacing: 1.2),
+                    ),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: Container(height: 1, color: _white.withOpacity(.08)),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  child: _LogoutTile(onTap: widget.onSignOut),
+
+                Container(height: 1,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    color: _white.withOpacity(.08)),
+                const SizedBox(height: 8),
+
+                // ── Nav groups ─────────────────────────────────────────
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    children: [
+                      for (final group in _groups) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
+                          child: Text(
+                            group.labelKey == 'nav.main' ? 'NAVIGATION' : 'PLUS',
+                            style: TextStyle(
+                                color: _gold.withOpacity(.6),
+                                fontSize: 9, fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5),
+                          ),
+                        ),
+                        for (int i = 0; i < group.entries.length; i++)
+                          _SidebarItem(
+                            entry: group.entries[i],
+                            selected: group.entries[i].labelKey == _activeKey,
+                            index: i,
+                            opacity: widget.opacity,
+                            onTap: () {
+                              setState(() => _activeKey = group.entries[i].labelKey);
+                              widget.onSelect(group.entries[i].labelKey);
+                            },
+                          ),
+                      ],
+
+                      // ── Logout as last item ─────────────────────────
+                      const SizedBox(height: 8),
+                      Container(height: 1, color: _white.withOpacity(.06),
+                          margin: const EdgeInsets.symmetric(horizontal: 4)),
+                      const SizedBox(height: 8),
+                      _SidebarLogoutItem(onTap: widget.onSignOut),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+
+                // ── App branding footer ────────────────────────────────
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    child: Row(children: [
+                      Image.asset('assets/images/logo_transparent.png',
+                          width: 22, height: 22,
+                          errorBuilder: (_, __, ___) => const Icon(
+                              Icons.school_rounded, size: 20, color: _gold)),
+                      const SizedBox(width: 8),
+                      Text(AppConfig.appName,
+                          style: TextStyle(color: _white.withOpacity(.5),
+                              fontSize: 12, fontWeight: FontWeight.w600)),
+                      const Spacer(),
+                      Text('v${AppConfig.appVersion}',
+                          style: TextStyle(color: _white.withOpacity(.25), fontSize: 10)),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ]),
         ),
       ),
     );
   }
 }
 
-class _AnimatedMenuItem extends StatelessWidget {
+class _NavGroup {
+  final String labelKey;
+  final List<RoleNavEntry> entries;
+  const _NavGroup({required this.labelKey, required this.entries});
+}
+
+// ── Sidebar Item ─────────────────────────────────────────────────────────
+class _SidebarItem extends StatelessWidget {
   final RoleNavEntry entry;
   final bool selected;
   final int index;
   final double opacity;
   final VoidCallback onTap;
-  const _AnimatedMenuItem({
+  const _SidebarItem({
     required this.entry, required this.selected,
     required this.index, required this.opacity, required this.onTap,
   });
@@ -613,12 +699,12 @@ class _AnimatedMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSlide(
-      offset: Offset(-(1 - opacity) * 0.4, 0),
-      duration: Duration(milliseconds: 200 + index * 40),
+      offset: Offset(-(1 - opacity.clamp(0.0, 1.0)) * 0.35, 0),
+      duration: Duration(milliseconds: 180 + index * 35),
       curve: Curves.easeOutCubic,
       child: AnimatedOpacity(
         opacity: opacity.clamp(0.0, 1.0),
-        duration: Duration(milliseconds: 200 + index * 40),
+        duration: Duration(milliseconds: 180 + index * 35),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Material(
@@ -626,25 +712,26 @@ class _AnimatedMenuItem extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: onTap,
-              splashColor: _menuAcc.withOpacity(.15),
+              splashColor: _gold.withOpacity(.1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                 decoration: BoxDecoration(
                   color: selected ? _white.withOpacity(.10) : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
-                  border: selected ? Border.all(color: _menuAcc.withOpacity(.25)) : null,
+                  border: selected ? Border.all(color: _gold.withOpacity(.2)) : null,
                 ),
                 child: Row(children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(6),
+                  Container(
+                    width: 36, height: 36,
                     decoration: BoxDecoration(
-                      color: selected ? _menuAcc.withOpacity(.2) : _white.withOpacity(.06),
-                      borderRadius: BorderRadius.circular(8),
+                      color: selected
+                          ? _gold.withOpacity(.2)
+                          : _white.withOpacity(.07),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(entry.icon, size: 18,
-                        color: selected ? _menuAcc : _menuTxt.withOpacity(.7)),
+                        color: selected ? _gold : _menuTxt.withOpacity(.7)),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -657,9 +744,9 @@ class _AnimatedMenuItem extends StatelessWidget {
                   ),
                   if (selected)
                     Container(
-                      width: 5, height: 5,
+                      width: 6, height: 6,
                       decoration: const BoxDecoration(
-                          color: _menuAcc, shape: BoxShape.circle),
+                          color: _gold, shape: BoxShape.circle),
                     ),
                 ]),
               ),
@@ -671,9 +758,9 @@ class _AnimatedMenuItem extends StatelessWidget {
   }
 }
 
-class _LogoutTile extends StatelessWidget {
+class _SidebarLogoutItem extends StatelessWidget {
   final VoidCallback onTap;
-  const _LogoutTile({required this.onTap});
+  const _SidebarLogoutItem({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -682,24 +769,60 @@ class _LogoutTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           child: Row(children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              width: 36, height: 36,
               decoration: BoxDecoration(
-                color: _terra.withOpacity(.2),
-                borderRadius: BorderRadius.circular(8),
+                color: ScolarisPalette.terracotta.withOpacity(.2),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.logout_rounded, size: 18, color: _terra),
+              child: const Icon(Icons.logout_rounded, size: 18,
+                  color: ScolarisPalette.terracotta),
             ),
             const SizedBox(width: 14),
             Text('common.logout'.tr(),
-                style: TextStyle(color: _terra.withOpacity(.9), fontSize: 14,
-                    fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: ScolarisPalette.terracotta.withOpacity(.9),
+                    fontSize: 14, fontWeight: FontWeight.w500)),
           ]),
         ),
       ),
     );
   }
+}
+
+// ── Sidebar background pattern ────────────────────────────────────────────
+class _SidebarPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = ScolarisPalette.gold.withOpacity(.04)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    const sp = 48.0;
+    final cols = (size.width / sp).ceil() + 1;
+    final rows = (size.height / sp).ceil() + 1;
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        final cx = c * sp + (r.isEven ? sp * 0.5 : 0);
+        final cy = r * sp * 0.866;
+        _diamond(canvas, Offset(cx, cy), 8, p);
+      }
+    }
+  }
+
+  void _diamond(Canvas canvas, Offset o, double r, Paint p) {
+    final path = Path()
+      ..moveTo(o.dx, o.dy - r)
+      ..lineTo(o.dx + r * 0.7, o.dy)
+      ..lineTo(o.dx, o.dy + r)
+      ..lineTo(o.dx - r * 0.7, o.dy)
+      ..close();
+    canvas.drawPath(path, p);
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }
