@@ -8,22 +8,22 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_theme.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../presentation/providers/auth_providers.dart';
+import '../pages/notifications_page.dart';
+import '../pages/search_page.dart';
 import '../widgets/responsive_role_shell.dart';
 
-// ── Design tokens ──────────────────────────────────────────────────────────
-const _pageBg   = Color(0xFFF5EEE6);
-const _white    = Colors.white;
-const _ink      = Color(0xFF1A0A00);
-const _muted    = Color(0xFF7A5C44);
-const _border   = Color(0xFFDDCCBB);
-const _menuBg   = ScolarisPalette.menuBg;
-const _menuAcc  = ScolarisPalette.gold;
-const _menuTxt  = Color(0xFFE8DDD0);
-const _terra    = ScolarisPalette.terracotta;
+const _pageBg  = Color(0xFFF5EEE6);
+const _white   = Colors.white;
+const _ink     = Color(0xFF1A0A00);
+const _muted   = Color(0xFF7A5C44);
+const _border  = Color(0xFFDDCCBB);
+const _menuBg  = ScolarisPalette.menuBg;
+const _menuAcc = ScolarisPalette.gold;
+const _menuTxt = Color(0xFFE8DDD0);
+const _terra   = ScolarisPalette.terracotta;
 
 const _kEdgeZone = 28.0;
 
-/// SmartSlide MobileShell avec menu africain animé.
 class MobileShell extends ConsumerStatefulWidget {
   final List<RoleNavEntry> dockEntries;
   final List<RoleNavEntry> drawerEntries;
@@ -48,32 +48,26 @@ class _MobileShellState extends ConsumerState<MobileShell>
   late final AnimationController _menuCtrl;
   late final Animation<double> _menuAnim;
 
-  bool _edgeDrag = false;
-  double _dragStartX = 0;
-  double _dragProgressX = 0;
-  bool _showEdgeBubble = false;
+  bool   _edgeDrag       = false;
+  double _dragStartX     = 0;
+  double _dragProgressX  = 0;
+  bool   _showEdgeBubble = false;
 
-  double _scale = 1;
+  double _scale  = 1;
   double _xShift = 0;
   double _radius = 0;
 
   bool get _menuOpen => _menuCtrl.value > 0.01;
 
-  int get _dockHighlight {
-    final key = widget.drawerEntries[_pageIndex].labelKey;
-    return widget.dockEntries.indexWhere((e) => e.labelKey == key);
-  }
-
   @override
   void initState() {
     super.initState();
     _menuCtrl = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 320));
+        vsync: this, duration: const Duration(milliseconds: 320));
     _menuAnim = CurvedAnimation(
-      parent: _menuCtrl,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
+        parent: _menuCtrl,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic);
     _menuCtrl.addListener(_onAnim);
   }
 
@@ -129,6 +123,20 @@ class _MobileShellState extends ConsumerState<MobileShell>
     }
   }
 
+  void _openNotifications() {
+    if (_menuOpen) _closeMenu();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const _FullPage(
+            title: 'Notifications', child: NotificationsPage())));
+  }
+
+  void _openSearch() {
+    if (_menuOpen) _closeMenu();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const _FullPage(
+            title: 'Recherche', child: SearchPage())));
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -173,14 +181,20 @@ class _MobileShellState extends ConsumerState<MobileShell>
                   child: Scaffold(
                     backgroundColor: _pageBg,
                     body: SafeArea(
-                      bottom: false,
+                      bottom: true,
                       child: Column(children: [
                         _SmartHeader(
                           title: widget.title,
                           user: user,
                           onMenu: _toggleMenu,
-                          onSearch: () {},
-                          menuOpen: _menuOpen,
+                          onSearch: _openSearch,
+                          onNotifications: _openNotifications,
+                          pageIndex: _pageIndex,
+                          entries: widget.drawerEntries,
+                          onTabTap: (i) {
+                            if (_menuOpen) _closeMenu();
+                            setState(() => _pageIndex = i);
+                          },
                         ),
                         Expanded(
                           child: KeyedSubtree(
@@ -189,14 +203,6 @@ class _MobileShellState extends ConsumerState<MobileShell>
                           ),
                         ),
                       ]),
-                    ),
-                    bottomNavigationBar: _FloatingDock(
-                      items: widget.dockEntries,
-                      currentIndex: _dockHighlight,
-                      onTap: (i) {
-                        if (_menuOpen) _closeMenu();
-                        _navigateTo(widget.dockEntries[i].labelKey);
-                      },
                     ),
                   ),
                 ),
@@ -217,18 +223,62 @@ class _MobileShellState extends ConsumerState<MobileShell>
   }
 }
 
-// ─── Smart Header ─────────────────────────────────────────────────────────
+// ─── Full Page Wrapper ────────────────────────────────────────────────────
+class _FullPage extends StatelessWidget {
+  final String title;
+  final Widget child;
+  const _FullPage({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5EEE6),
+      body: SafeArea(
+        child: Column(children: [
+          Container(
+            color: _white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 38, height: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5EEE6),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.arrow_back_rounded, color: _ink, size: 20),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(title, style: const TextStyle(color: _ink, fontSize: 17,
+                  fontWeight: FontWeight.w700)),
+            ]),
+          ),
+          Expanded(child: child),
+        ]),
+      ),
+    );
+  }
+}
+
+// ─── Smart Header with inline tab nav ─────────────────────────────────────
 class _SmartHeader extends StatelessWidget {
   final String title;
   final AppUser? user;
   final VoidCallback onMenu;
   final VoidCallback onSearch;
-  final bool menuOpen;
+  final VoidCallback onNotifications;
+  final int pageIndex;
+  final List<RoleNavEntry> entries;
+  final ValueChanged<int> onTabTap;
 
   const _SmartHeader({
     required this.title, required this.user,
     required this.onMenu, required this.onSearch,
-    required this.menuOpen,
+    required this.onNotifications,
+    required this.pageIndex, required this.entries,
+    required this.onTabTap,
   });
 
   @override
@@ -236,71 +286,115 @@ class _SmartHeader extends StatelessWidget {
     final initials = (user?.fullName.isNotEmpty ?? false)
         ? user!.fullName.substring(0, math.min(2, user!.fullName.length))
         : '?';
-    return Container(
-      height: 56,
-      color: _white,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Row(children: [
-        _HeaderBtn(onTap: onMenu, child: const _HamburgerIcon()),
-        // Logo
-        ClipRRect(
-          borderRadius: BorderRadius.circular(7),
-          child: Image.asset('assets/images/logo.png', width: 26, height: 26,
-              errorBuilder: (_, __, ___) => Container(
-                width: 26, height: 26,
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Top row
+        Container(
+          height: 56,
+          color: _white,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Row(children: [
+            _HeaderBtn(onTap: onMenu, child: const _HamburgerIcon()),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(7),
+              child: Image.asset('assets/images/logo.png', width: 26, height: 26,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 26, height: 26,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          colors: [_terra, ScolarisPalette.orange]),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Center(child: Text('S',
+                        style: TextStyle(color: _white, fontSize: 13,
+                            fontWeight: FontWeight.w800))),
+                  )),
+            ),
+            const SizedBox(width: 7),
+            Text(AppConfig.appName,
+                style: const TextStyle(fontSize: 14, color: _ink,
+                    fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+            const Spacer(),
+            _HeaderBtn(onTap: onSearch,
+                child: const Icon(Icons.search_rounded, size: 20, color: _muted)),
+            _HeaderBtn(
+              onTap: onNotifications,
+              child: Stack(clipBehavior: Clip.none, children: [
+                const Icon(Icons.notifications_outlined, size: 20, color: _muted),
+                Positioned(
+                  top: -2, right: -2,
+                  child: Container(
+                    width: 7, height: 7,
+                    decoration: const BoxDecoration(color: _terra, shape: BoxShape.circle),
+                  ),
+                ),
+              ]),
+            ),
+            GestureDetector(
+              onTap: () {},
+              child: Container(
+                width: 30, height: 30,
+                margin: const EdgeInsets.only(left: 2, right: 6),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [_terra, ScolarisPalette.orange]),
-                  borderRadius: BorderRadius.circular(7),
+                    colors: [_terra, ScolarisPalette.orange],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(9),
+                  boxShadow: [BoxShadow(
+                      color: _terra.withOpacity(.25),
+                      blurRadius: 6, offset: const Offset(0, 2))],
                 ),
-                child: const Center(child: Text('S',
-                    style: TextStyle(color: _white, fontSize: 13,
-                        fontWeight: FontWeight.w800))),
-              )),
-        ),
-        const SizedBox(width: 7),
-        Text(AppConfig.appName,
-            style: const TextStyle(fontSize: 14, color: _ink,
-                fontWeight: FontWeight.w700, letterSpacing: -0.2)),
-        const Spacer(),
-        _HeaderBtn(onTap: onSearch,
-            child: const Icon(Icons.search_rounded, size: 20, color: _muted)),
-        _HeaderBtn(
-          onTap: () {},
-          child: Stack(clipBehavior: Clip.none, children: [
-            const Icon(Icons.notifications_outlined, size: 20, color: _muted),
-            Positioned(
-              top: -2, right: -2,
-              child: Container(
-                width: 7, height: 7,
-                decoration: const BoxDecoration(color: _terra, shape: BoxShape.circle),
+                child: Center(child: Text(initials.toUpperCase(),
+                    style: const TextStyle(color: _white, fontSize: 10.5,
+                        fontWeight: FontWeight.w700))),
               ),
             ),
           ]),
         ),
-        GestureDetector(
-          onTap: () {},
-          child: Container(
-            width: 30, height: 30,
-            margin: const EdgeInsets.only(left: 2, right: 6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_terra, ScolarisPalette.orange],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(9),
-              boxShadow: [BoxShadow(
-                color: _terra.withOpacity(.25),
-                blurRadius: 6, offset: const Offset(0, 2),
-              )],
-            ),
-            child: Center(child: Text(initials.toUpperCase(),
-                style: const TextStyle(color: _white, fontSize: 10.5,
-                    fontWeight: FontWeight.w700))),
+
+        // Scrollable tab nav bar (replaces dock)
+        Container(
+          color: _white,
+          height: 44,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+            itemCount: entries.length,
+            itemBuilder: (ctx, i) {
+              final e   = entries[i];
+              final sel = i == pageIndex;
+              return GestureDetector(
+                onTap: () => onTabTap(i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.only(right: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: sel ? _terra : Colors.transparent,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(sel ? (e.activeIcon ?? e.icon) : e.icon,
+                        size: 15, color: sel ? _white : _muted),
+                    const SizedBox(width: 6),
+                    Text(e.labelKey.tr(),
+                        style: TextStyle(
+                            color: sel ? _white : _muted,
+                            fontSize: 12.5,
+                            fontWeight: sel ? FontWeight.w700 : FontWeight.w500)),
+                  ]),
+                ),
+              );
+            },
           ),
         ),
-      ]),
+
+        Container(height: 1, color: const Color(0xFFEEE5D8)),
+      ],
     );
   }
 }
@@ -362,7 +456,7 @@ class _EdgeBubble extends StatelessWidget {
   }
 }
 
-// ─── Slide Menu Panel – African dark green ────────────────────────────────
+// ─── Slide Menu Panel ─────────────────────────────────────────────────────
 class _SlideMenuPanel extends StatefulWidget {
   final List<RoleNavEntry> entries;
   final AppUser? user;
@@ -381,24 +475,13 @@ class _SlideMenuPanel extends StatefulWidget {
   State<_SlideMenuPanel> createState() => _SlideMenuPanelState();
 }
 
-class _SlideMenuPanelState extends State<_SlideMenuPanel>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _iconCtrl;
+class _SlideMenuPanelState extends State<_SlideMenuPanel> {
   String _activeKey = '';
 
   @override
   void initState() {
     super.initState();
-    _iconCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600))
-      ..repeat(reverse: true);
     if (widget.entries.isNotEmpty) _activeKey = widget.entries.first.labelKey;
-  }
-
-  @override
-  void dispose() {
-    _iconCtrl.dispose();
-    super.dispose();
   }
 
   @override
@@ -417,14 +500,12 @@ class _SlideMenuPanelState extends State<_SlideMenuPanel>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header: account icon left, X right ──────────────
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 16, 0),
                   child: Row(children: [
-                    // Avatar circle
                     Container(
-                      width: 40, height: 40,
+                      width: 44, height: 44,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [_menuAcc, _terra],
@@ -436,72 +517,61 @@ class _SlideMenuPanelState extends State<_SlideMenuPanel>
                       ),
                       child: Center(child: Text(initials,
                           style: const TextStyle(color: _white,
-                              fontWeight: FontWeight.w800, fontSize: 14))),
+                              fontWeight: FontWeight.w800, fontSize: 16))),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(user?.fullName ?? 'Utilisateur',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1, overflow: TextOverflow.ellipsis,
                             style: const TextStyle(color: _white,
-                                fontWeight: FontWeight.w700, fontSize: 13)),
+                                fontWeight: FontWeight.w700, fontSize: 14)),
                         Text(user?.email ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: _menuTxt.withOpacity(.6), fontSize: 10.5)),
+                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: _menuTxt.withOpacity(.6), fontSize: 11)),
                       ]),
                     ),
-                    // X close button
                     GestureDetector(
                       onTap: () => widget.onSelect(_activeKey),
                       child: Container(
-                        width: 28, height: 28,
+                        width: 30, height: 30,
                         decoration: BoxDecoration(
-                          color: _white.withOpacity(.08),
-                          shape: BoxShape.circle,
-                        ),
+                            color: _white.withOpacity(.08), shape: BoxShape.circle),
                         child: const Icon(Icons.close_rounded, color: _white, size: 16),
                       ),
                     ),
                   ]),
                 ),
               ),
-
-              // Role badge
-              if (user != null) Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _menuAcc.withOpacity(.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _menuAcc.withOpacity(.3)),
+              if (user != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _menuAcc.withOpacity(.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _menuAcc.withOpacity(.3)),
+                    ),
+                    child: Text(user.role.name.toUpperCase(),
+                        style: const TextStyle(color: _menuAcc,
+                            fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
                   ),
-                  child: Text(user.role.name.toUpperCase(),
-                      style: const TextStyle(color: _menuAcc,
-                          fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
                 ),
-              ),
-
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
                 child: Container(height: 1, color: _white.withOpacity(.08)),
               ),
-
-              // ── Nav items ────────────────────────────────────────
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   itemCount: widget.entries.length,
                   itemBuilder: (ctx, i) {
-                    final e = widget.entries[i];
+                    final e        = widget.entries[i];
                     final selected = e.labelKey == _activeKey;
                     return _AnimatedMenuItem(
-                      entry: e,
-                      selected: selected,
-                      index: i,
-                      opacity: widget.opacity,
+                      entry: e, selected: selected,
+                      index: i, opacity: widget.opacity,
                       onTap: () {
                         setState(() => _activeKey = e.labelKey);
                         widget.onSelect(e.labelKey);
@@ -510,8 +580,6 @@ class _SlideMenuPanelState extends State<_SlideMenuPanel>
                   },
                 ),
               ),
-
-              // Divider + logout
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Container(height: 1, color: _white.withOpacity(.08)),
@@ -565,9 +633,7 @@ class _AnimatedMenuItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected ? _white.withOpacity(.10) : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
-                  border: selected
-                      ? Border.all(color: _menuAcc.withOpacity(.25))
-                      : null,
+                  border: selected ? Border.all(color: _menuAcc.withOpacity(.25)) : null,
                 ),
                 child: Row(children: [
                   AnimatedContainer(
@@ -587,7 +653,6 @@ class _AnimatedMenuItem extends StatelessWidget {
                           color: selected ? _white : _menuTxt.withOpacity(.8),
                           fontSize: 14,
                           fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                          letterSpacing: selected ? 0 : 0.2,
                         )),
                   ),
                   if (selected)
@@ -633,73 +698,6 @@ class _LogoutTile extends StatelessWidget {
                 style: TextStyle(color: _terra.withOpacity(.9), fontSize: 14,
                     fontWeight: FontWeight.w600)),
           ]),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Floating Dock ────────────────────────────────────────────────────────
-class _FloatingDock extends StatelessWidget {
-  final List<RoleNavEntry> items;
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-  const _FloatingDock({required this.items, required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final show = items.take(5).toList();
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-      decoration: BoxDecoration(
-        color: _white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, 4)),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            children: List.generate(show.length, (i) {
-              final e = show[i];
-              final sel = i == currentIndex;
-              return Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onTap(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: sel ? _terra.withOpacity(.12) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(e.icon, size: 20,
-                              color: sel ? _terra : _muted),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(e.labelKey.tr(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: sel ? _terra : _muted,
-                                fontSize: 9.5,
-                                fontWeight: sel ? FontWeight.w700 : FontWeight.w400)),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
         ),
       ),
     );
