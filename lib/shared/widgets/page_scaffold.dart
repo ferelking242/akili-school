@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
-const ink = Color(0xFF111827);
-const muted = Color(0xFF6B7280);
-const border = Color(0xFFE5E7EB);
-const cardBg = Colors.white;
-const pageBg = Color(0xFFF0F0F0);
-const subtleBg = Color(0xFFF1F2F4);
+// ── Scolaris African palette for all shared pages ─────────────────────────
+const ink      = Color(0xFF1A0A00);
+const muted    = Color(0xFF7A5C44);
+const border   = Color(0xFFDDCCBB);
+const cardBg   = Colors.white;
+const pageBg   = Color(0xFFF5EEE6);
+const subtleBg = Color(0xFFF0E8DC);
 
-/// Common scaffold for every internal page — keeps the mem0 light look.
+const _terra  = Color(0xFF8B1A00);
+const _orange = Color(0xFFD4540A);
+const _gold   = Color(0xFFC17F24);
+
 class PageScaffold extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -25,7 +29,7 @@ class PageScaffold extends StatelessWidget {
     return Container(
       color: pageBg,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -38,14 +42,12 @@ class PageScaffold extends StatelessWidget {
                     children: [
                       Text(title,
                           style: const TextStyle(
-                              fontSize: 18,
-                              color: ink,
-                              fontWeight: FontWeight.w700)),
+                              fontSize: 18, color: ink,
+                              fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
                         Text(subtitle!,
-                            style: const TextStyle(
-                                fontSize: 12.5, color: muted)),
+                            style: const TextStyle(fontSize: 12.5, color: muted)),
                       ],
                     ],
                   ),
@@ -53,6 +55,10 @@ class PageScaffold extends StatelessWidget {
                 ...actions,
               ],
             ),
+            const SizedBox(height: 4),
+            Container(height: 2, width: 32,
+                decoration: BoxDecoration(
+                  color: _terra, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             child,
           ],
@@ -79,15 +85,10 @@ class DataPanel extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .06),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: const [BoxShadow(
+          color: Color(0x0A000000), blurRadius: 6, offset: Offset(0, 2))],
       ),
       child: Padding(
         padding: padding,
@@ -99,11 +100,18 @@ class DataPanel extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
+                    Container(
+                      width: 3, height: 16,
+                      decoration: BoxDecoration(
+                        color: _terra,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(title!,
                         style: const TextStyle(
-                            fontSize: 14,
-                            color: ink,
-                            fontWeight: FontWeight.w700)),
+                            fontSize: 13, color: ink,
+                            fontWeight: FontWeight.w800, letterSpacing: 0.2)),
                     const Spacer(),
                     ...headerActions,
                   ],
@@ -129,20 +137,20 @@ class StatusPill extends StatelessWidget {
   });
 
   factory StatusPill.success(String label) =>
-      StatusPill(label: label, color: const Color(0xFF166534), bg: const Color(0xFFDCFCE7));
+      StatusPill(label: label, color: const Color(0xFF1B5E20), bg: const Color(0xFFE8F5E9));
   factory StatusPill.warning(String label) =>
-      StatusPill(label: label, color: const Color(0xFF92400E), bg: const Color(0xFFFEF3C7));
+      StatusPill(label: label, color: const Color(0xFFD4540A), bg: const Color(0xFFFFF3E0));
   factory StatusPill.danger(String label) =>
-      StatusPill(label: label, color: const Color(0xFF991B1B), bg: const Color(0xFFFEE2E2));
+      StatusPill(label: label, color: const Color(0xFF8B1A00), bg: const Color(0xFFFCE4EC));
   factory StatusPill.info(String label) =>
-      StatusPill(label: label, color: const Color(0xFF1E40AF), bg: const Color(0xFFDBEAFE));
+      StatusPill(label: label, color: const Color(0xFFC17F24), bg: const Color(0xFFFFF8E1));
   factory StatusPill.neutral(String label) =>
       StatusPill(label: label, color: muted, bg: subtleBg);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(
         color: bg ?? subtleBg,
         borderRadius: BorderRadius.circular(99),
@@ -157,37 +165,34 @@ class StatusPill extends StatelessWidget {
 class SearchInput extends StatelessWidget {
   final String hint;
   final ValueChanged<String>? onChanged;
-  const SearchInput({super.key, this.hint = 'Search…', this.onChanged});
+  const SearchInput({super.key, this.hint = 'Rechercher…', this.onChanged});
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 220,
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      width: 220, height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: cardBg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: border),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.search_rounded, size: 14, color: muted),
-          const SizedBox(width: 6),
-          Expanded(
-            child: TextField(
-              onChanged: onChanged,
-              style: const TextStyle(fontSize: 12.5, color: ink),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: const TextStyle(fontSize: 12.5, color: muted),
-                isCollapsed: true,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-              ),
+      child: Row(children: [
+        const Icon(Icons.search_rounded, size: 15, color: muted),
+        const SizedBox(width: 6),
+        Expanded(
+          child: TextField(
+            onChanged: onChanged,
+            style: const TextStyle(fontSize: 12.5, color: ink),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(fontSize: 12.5, color: muted),
+              isCollapsed: true,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
             ),
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 }
@@ -211,26 +216,25 @@ class ActionButton extends StatelessWidget {
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: primary ? ink : cardBg,
-            borderRadius: BorderRadius.circular(8),
+            color: primary ? _terra : cardBg,
+            borderRadius: BorderRadius.circular(9),
             border: primary ? null : Border.all(color: border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon,
-                    size: 13, color: primary ? Colors.white : ink),
+                Icon(icon, size: 13,
+                    color: primary ? Colors.white : ink),
                 const SizedBox(width: 6),
               ],
               Text(label,
                   style: TextStyle(
                       color: primary ? Colors.white : ink,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600)),
+                      fontSize: 12, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -258,21 +262,19 @@ class EmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 48, height: 48,
             decoration: BoxDecoration(
               color: subtleBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: border),
             ),
             child: Icon(icon, color: muted, size: 22),
           ),
-          const SizedBox(height: 10),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 13, color: ink, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(
+              fontSize: 13, color: ink, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(description,
-              textAlign: TextAlign.center,
+          Text(description, textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 12, color: muted)),
         ],
       ),
@@ -280,7 +282,6 @@ class EmptyState extends StatelessWidget {
   }
 }
 
-/// Lightweight, framework-agnostic table.
 class DataTablePanel extends StatelessWidget {
   final List<String> columns;
   final List<List<Widget>> rows;
@@ -296,46 +297,46 @@ class DataTablePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             color: subtleBg,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-          ),
-          child: Row(
-            children: [
+            child: Row(children: [
               for (var i = 0; i < columns.length; i++)
                 Expanded(
                   flex: _flex(i),
                   child: Text(columns[i].toUpperCase(),
                       style: const TextStyle(
-                          fontSize: 10.5,
-                          color: muted,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.6)),
+                          fontSize: 10.5, color: muted,
+                          fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                 ),
-            ],
+            ]),
           ),
-        ),
-        for (var r = 0; r < rows.length; r++)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: border)),
-              color: r.isEven ? cardBg : const Color(0xFFFAFAFA),
+          for (var r = 0; r < rows.length; r++)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                border: const Border(top: BorderSide(color: border)),
+                color: r.isEven ? cardBg : const Color(0xFFFAF7F3),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (var c = 0; c < rows[r].length; c++)
+                    Expanded(flex: _flex(c), child: rows[r][c]),
+                ],
+              ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                for (var c = 0; c < rows[r].length; c++)
-                  Expanded(flex: _flex(c), child: rows[r][c]),
-              ],
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -350,25 +351,29 @@ class Avatar extends StatelessWidget {
     final initial = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?';
     final c = color ?? _palette[name.codeUnits.fold<int>(0, (a, b) => a + b) % _palette.length];
     return Container(
-      width: size,
-      height: size,
+      width: size, height: size,
       decoration: BoxDecoration(
-        color: c.withValues(alpha: .2),
-        borderRadius: BorderRadius.circular(size / 4),
+        gradient: LinearGradient(
+          colors: [c.withOpacity(.6), c],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(size / 3.5),
       ),
       alignment: Alignment.center,
       child: Text(initial,
           style: TextStyle(
-              color: c, fontWeight: FontWeight.w700, fontSize: size * .42)),
+              color: Colors.white, fontWeight: FontWeight.w800,
+              fontSize: size * .42)),
     );
   }
 
   static const _palette = [
-    Color(0xFF6D28D9),
-    Color(0xFF0EA5E9),
-    Color(0xFF16A34A),
-    Color(0xFFEA580C),
-    Color(0xFFDB2777),
-    Color(0xFF0891B2),
+    Color(0xFF8B1A00),
+    Color(0xFFD4540A),
+    Color(0xFFC17F24),
+    Color(0xFF1B5E20),
+    Color(0xFF5D4037),
+    Color(0xFF3E1A00),
   ];
 }
