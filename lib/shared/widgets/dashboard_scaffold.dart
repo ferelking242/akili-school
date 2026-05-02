@@ -1,13 +1,19 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-const _ink = Color(0xFF111827);
-const _muted = Color(0xFF6B7280);
-const _border = Color(0xFFE5E7EB);
-const _white = Colors.white;
-const _bg = Color(0xFFF0F0F0);
+// ── Scolaris African palette ─────────────────────────────────────────────
+const _terra  = Color(0xFF8B1A00);
+const _orange = Color(0xFFD4540A);
+const _gold   = Color(0xFFC17F24);
+const _green  = Color(0xFF1B5E20);
+const _ink    = Color(0xFF1A0A00);
+const _muted  = Color(0xFF7A5C44);
+const _border = Color(0xFFDDCCBB);
+const _white  = Colors.white;
+const _bg     = Color(0xFFF5EEE6);
+const _subtle = Color(0xFFF0E8DC);
 
-/// Mem0-inspired dashboard layout used by every role's home page.
+/// Dashboard layout utilisé par tous les rôles (Enseignant, Finance, Surveillance, etc.)
 class DashboardScaffold extends StatelessWidget {
   final List<DashStat> stats;
   final List<DashSection> sections;
@@ -25,25 +31,24 @@ class DashboardScaffold extends StatelessWidget {
     return Container(
       color: _bg,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _DateRangeBar(),
-            const SizedBox(height: 14),
+            // Period bar
+            _PeriodBar(),
+            const SizedBox(height: 16),
+            // Stats grid
             _StatsGrid(stats: stats),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
+            // Sections
             for (final s in sections) ...[
               _SectionCard(section: s),
               const SizedBox(height: 14),
             ],
+            // Explore
             if (explore != null && explore!.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              const Text(
-                'Explore the Platform',
-                style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700, color: _ink),
-              ),
+              _SectionLabel('Explorer la plateforme'),
               const SizedBox(height: 10),
               _ExploreGrid(cards: explore!),
             ],
@@ -54,96 +59,90 @@ class DashboardScaffold extends StatelessWidget {
   }
 }
 
-class _DateRangeBar extends StatelessWidget {
-  const _DateRangeBar();
+// ── Period bar ────────────────────────────────────────────────────────────
+class _PeriodBar extends StatefulWidget {
+  @override
+  State<_PeriodBar> createState() => _PeriodBarState();
+}
+
+class _PeriodBarState extends State<_PeriodBar> {
+  int _sel = 0;
+  final _chips = ['Aujourd\'hui', '7 jours', '30 jours', 'Ce trimestre'];
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _RangePill(label: 'Pick a date range', icon: Icons.calendar_today_outlined),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(children: [
+        Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: _white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _border),
+          ),
+          child: Row(children: [
+            const Icon(Icons.calendar_today_outlined, size: 13, color: _muted),
+            const SizedBox(width: 6),
+            const Text('Période', style: TextStyle(
+                fontSize: 12, color: _ink, fontWeight: FontWeight.w500)),
+            const SizedBox(width: 4),
+            const Icon(Icons.expand_more_rounded, size: 14, color: _muted),
+          ]),
+        ),
         const SizedBox(width: 8),
-        _RangeChip(label: 'All Time', selected: true),
-        const SizedBox(width: 6),
-        _RangeChip(label: '1d'),
-        const SizedBox(width: 6),
-        _RangeChip(label: '7d'),
-        const SizedBox(width: 6),
-        _RangeChip(label: '30d'),
-      ],
-    );
-  }
-}
-
-class _RangePill extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  const _RangePill({required this.label, required this.icon});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: _white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _border),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 13, color: _muted),
-          const SizedBox(width: 6),
-          Text(label,
-              style: const TextStyle(fontSize: 12, color: _ink, fontWeight: FontWeight.w500)),
-          const SizedBox(width: 6),
-          const Icon(Icons.expand_more_rounded, size: 14, color: _muted),
+        for (int i = 0; i < _chips.length; i++) ...[
+          GestureDetector(
+            onTap: () => setState(() => _sel = i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _sel == i ? _terra : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: _sel == i ? _terra : _border),
+              ),
+              child: Text(_chips[i],
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: _sel == i ? _white : _muted,
+                      fontWeight: _sel == i ? FontWeight.w700 : FontWeight.w500)),
+            ),
+          ),
+          if (i < _chips.length - 1) const SizedBox(width: 6),
         ],
-      ),
+      ]),
     );
   }
 }
 
-class _RangeChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  const _RangeChip({required this.label, this.selected = false});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: selected ? _white : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _border),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 12,
-              color: selected ? _ink : _muted,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
-    );
-  }
-}
-
+// ── Stats Grid ────────────────────────────────────────────────────────────
 class _StatsGrid extends StatelessWidget {
   final List<DashStat> stats;
   const _StatsGrid({required this.stats});
+
+  static const _colors = [_terra, _gold, _green, _orange];
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (ctx, c) {
-      final cols = c.maxWidth > 980 ? 4 : c.maxWidth > 620 ? 2 : 1;
+      final cols = c.maxWidth > 980 ? 4 : c.maxWidth > 600 ? 2 : 2;
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: cols,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          mainAxisExtent: 86,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          mainAxisExtent: 90,
         ),
         itemCount: stats.length,
-        itemBuilder: (_, i) => _StatCard(stat: stats[i]),
+        itemBuilder: (_, i) => _StatCard(stat: stats[i],
+            color: _colors[i % _colors.length]),
       );
     });
   }
@@ -151,194 +150,148 @@ class _StatsGrid extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final DashStat stat;
-  const _StatCard({required this.stat});
+  final Color color;
+  const _StatCard({required this.stat, required this.color});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: _white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: const [BoxShadow(
+            color: Color(0x0A000000), blurRadius: 6, offset: Offset(0, 2))],
       ),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(stat.icon, size: 13, color: _muted),
-              const SizedBox(width: 6),
-              Text(stat.label,
-                  style: const TextStyle(
-                      fontSize: 12.5, color: _ink, fontWeight: FontWeight.w500)),
-              const SizedBox(width: 4),
-              const Icon(Icons.info_outline_rounded, size: 12, color: _muted),
-            ],
-          ),
+          Row(children: [
+            Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                color: color.withOpacity(.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(stat.icon, size: 14, color: color),
+            ),
+            const SizedBox(width: 6),
+            Expanded(child: Text(stat.label,
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 11.5, color: _muted, fontWeight: FontWeight.w500))),
+          ]),
           const Spacer(),
-          Text(stat.value,
-              style: const TextStyle(
-                  fontSize: 24, color: _ink, fontWeight: FontWeight.w700)),
+          Text(stat.value, style: TextStyle(
+              fontSize: 22, color: color, fontWeight: FontWeight.w900)),
         ],
       ),
     );
   }
 }
 
+// ── Section Card ──────────────────────────────────────────────────────────
 class _SectionCard extends StatelessWidget {
   final DashSection section;
   const _SectionCard({required this.section});
+
   @override
   Widget build(BuildContext context) {
+    final dotColor = section.dotColor ?? _green;
     return Container(
       decoration: BoxDecoration(
         color: _white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: const [BoxShadow(
+            color: Color(0x0A000000), blurRadius: 6, offset: Offset(0, 2))],
       ),
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(section.title,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            color: _ink,
-                            fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 4),
-                    Text(section.count,
-                        style: const TextStyle(
-                            fontSize: 22,
-                            color: _ink,
-                            fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-              if (section.actionLabel != null)
-                _PrimaryButton(
-                  label: section.actionLabel!,
-                  onTap: section.onAction ?? () {},
-                ),
-            ],
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(section.title, style: const TextStyle(
+                fontSize: 14, color: _ink, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 2),
+            Text(section.count, style: const TextStyle(
+                fontSize: 26, color: _terra, fontWeight: FontWeight.w900)),
+          ])),
+          if (section.actionLabel != null)
+            _PrimaryBtn(label: section.actionLabel!, onTap: section.onAction ?? () {}),
+        ]),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: _subtle,
+            borderRadius: BorderRadius.circular(10),
           ),
-          const SizedBox(height: 28),
-          Center(
-            child: Text(section.emptyText,
-                style: const TextStyle(fontSize: 12.5, color: _muted)),
+          child: Center(child: Text(section.emptyText,
+              style: const TextStyle(fontSize: 12.5, color: _muted))),
+        ),
+        const SizedBox(height: 12),
+        Row(children: [
+          Container(
+            width: 8, height: 8,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
-          const SizedBox(height: 28),
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: section.dotColor ?? const Color(0xFF22C55E),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(section.footerLabel,
-                  style: const TextStyle(
-                      fontSize: 11.5,
-                      color: _muted,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.4)),
-              const Spacer(),
-              const Text('View Breakdown',
-                  style: TextStyle(fontSize: 11.5, color: _muted)),
-              const SizedBox(width: 6),
-              const _MiniSwitch(),
-            ],
-          ),
-        ],
-      ),
+          const SizedBox(width: 6),
+          Text(section.footerLabel, style: const TextStyle(
+              fontSize: 11.5, color: _muted,
+              fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+          const Spacer(),
+          Text('Voir détails', style: TextStyle(
+              fontSize: 11.5, color: _terra.withOpacity(.8),
+              fontWeight: FontWeight.w600)),
+          const SizedBox(width: 4),
+          const Icon(Icons.chevron_right_rounded, size: 14, color: _muted),
+        ]),
+      ]),
     );
   }
 }
 
-class _PrimaryButton extends StatelessWidget {
+class _PrimaryBtn extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-  const _PrimaryButton({required this.label, required this.onTap});
+  const _PrimaryBtn({required this.label, required this.onTap});
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _ink,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(label,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
+      child: Container(
+        height: 34, padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: _terra,
+          borderRadius: BorderRadius.circular(10),
         ),
+        child: Text(label, style: const TextStyle(
+            color: _white, fontSize: 12, fontWeight: FontWeight.w700)),
       ),
     );
   }
 }
 
-class _MiniSwitch extends StatelessWidget {
-  const _MiniSwitch();
+// ── Section label ─────────────────────────────────────────────────────────
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 16,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return Text(text, style: const TextStyle(
+        fontSize: 14, color: _ink, fontWeight: FontWeight.w800));
   }
 }
 
+// ── Explore Grid ──────────────────────────────────────────────────────────
 class _ExploreGrid extends StatelessWidget {
   final List<ExploreCard> cards;
   const _ExploreGrid({required this.cards});
+
+  static const _colors = [_terra, _gold, _green, _orange];
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (ctx, c) {
@@ -348,12 +301,13 @@ class _ExploreGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: cols,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          mainAxisExtent: 92,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          mainAxisExtent: 88,
         ),
         itemCount: cards.length,
-        itemBuilder: (_, i) => _ExploreItem(card: cards[i]),
+        itemBuilder: (_, i) => _ExploreItem(card: cards[i],
+            color: _colors[i % _colors.length]),
       );
     });
   }
@@ -361,99 +315,64 @@ class _ExploreGrid extends StatelessWidget {
 
 class _ExploreItem extends StatelessWidget {
   final ExploreCard card;
-  const _ExploreItem({required this.card});
+  final Color color;
+  const _ExploreItem({required this.card, required this.color});
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: _white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(card.icon, size: 15, color: const Color(0xFFB45309)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: color.withOpacity(.12),
+            borderRadius: BorderRadius.circular(9),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(card.title,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            color: _ink,
-                            fontWeight: FontWeight.w700)),
-                    if (card.suggested) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        child: const Text('Suggested',
-                            style: TextStyle(
-                                fontSize: 9.5,
-                                color: Color(0xFFB45309),
-                                fontWeight: FontWeight.w700)),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(card.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 11.5, color: _muted, height: 1.35)),
-              ],
-            ),
-          ),
-        ],
-      ),
+          child: Icon(card.icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Text(card.title, style: const TextStyle(
+                fontSize: 13, color: _ink, fontWeight: FontWeight.w700)),
+            if (card.suggested) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                    color: _gold.withOpacity(.15),
+                    borderRadius: BorderRadius.circular(99)),
+                child: const Text('Suggéré', style: TextStyle(
+                    fontSize: 9.5, color: _gold, fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ]),
+          const SizedBox(height: 3),
+          Text(card.description, maxLines: 2, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11.5, color: _muted, height: 1.35)),
+        ])),
+      ]),
     );
   }
 }
 
-// ───────────────────────────── data classes ─────────────────────────────
-
+// ── Data classes ──────────────────────────────────────────────────────────
 class DashStat {
   final IconData icon;
   final String label;
   final String value;
-  const DashStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  const DashStat({required this.icon, required this.label, required this.value});
 
-  // Backward-compat factory used by old call-sites (labelKey + tr).
   factory DashStat.tr({
     required IconData icon,
     required String labelKey,
     required String value,
-  }) =>
-      DashStat(icon: icon, label: labelKey.tr(), value: value);
+  }) => DashStat(icon: icon, label: labelKey.tr(), value: value);
 }
 
 class DashSection {

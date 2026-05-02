@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../shared/pages/settings_page.dart';
 import '../../../shared/widgets/dashboard_scaffold.dart';
@@ -15,35 +16,41 @@ class TeacherHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return ResponsiveRoleShell(
       role: UserRole.teacher,
-      title: 'scolaris',
+      title: 'Scolaris',
       groups: const [
         RoleNavGroup(labelKey: 'sections.setup', entries: [
           RoleNavEntry(
               icon: Icons.dashboard_outlined,
+              activeIcon: Icons.dashboard_rounded,
               labelKey: 'nav.dashboard',
               page: _TeacherDashboard()),
           RoleNavEntry(
               icon: Icons.class_outlined,
+              activeIcon: Icons.class_rounded,
               labelKey: 'nav.classes',
               page: TeacherClassesPage()),
         ]),
         RoleNavGroup(labelKey: 'sections.activity', entries: [
           RoleNavEntry(
               icon: Icons.grading_outlined,
+              activeIcon: Icons.grading_rounded,
               labelKey: 'nav.grades',
               page: GradebookPage()),
           RoleNavEntry(
               icon: Icons.fact_check_outlined,
+              activeIcon: Icons.fact_check_rounded,
               labelKey: 'nav.attendance',
               page: AttendanceTodayPage()),
           RoleNavEntry(
               icon: Icons.qr_code_2_outlined,
+              activeIcon: Icons.qr_code_2_rounded,
               labelKey: 'nav.qr',
               page: QrPanel()),
         ]),
         RoleNavGroup(labelKey: 'sections.account', entries: [
           RoleNavEntry(
               icon: Icons.settings_outlined,
+              activeIcon: Icons.settings_rounded,
               labelKey: 'common.settings',
               page: SettingsPage()),
         ]),
@@ -58,26 +65,39 @@ class _TeacherDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return const DashboardScaffold(
       stats: [
-        DashStat(icon: Icons.class_rounded, label: 'Classes', value: '6'),
-        DashStat(icon: Icons.people_outline, label: 'Students', value: '178'),
-        DashStat(icon: Icons.grading_rounded, label: 'Class average', value: '13.8'),
-        DashStat(icon: Icons.assignment_outlined, label: 'Pending tasks', value: '4'),
+        DashStat(icon: Icons.class_rounded,      label: 'Mes classes',     value: '6'),
+        DashStat(icon: Icons.people_outline,      label: 'Élèves',          value: '178'),
+        DashStat(icon: Icons.grading_rounded,     label: 'Moyenne classe',  value: '13.8'),
+        DashStat(icon: Icons.assignment_outlined, label: 'Copies à noter',  value: '4'),
       ],
       sections: [
         DashSection(
-          title: 'My classes today',
+          title: 'Cours aujourd\'hui',
           count: '3',
-          emptyText: 'No additional classes for this range.',
-          footerLabel: 'CLASSES',
-          actionLabel: 'View Classes',
+          emptyText: 'Aucun cours supplémentaire pour cette période.',
+          footerLabel: 'COURS',
+          actionLabel: 'Voir classes',
         ),
         DashSection(
-          title: 'Grading queue',
+          title: 'File de notation',
           count: '4',
-          emptyText: 'No assignments waiting to be graded.',
-          footerLabel: 'GRADING',
-          actionLabel: 'Open Gradebook',
-          dotColor: Color(0xFFF59E0B),
+          emptyText: 'Aucun devoir en attente de notation.',
+          footerLabel: 'NOTATION',
+          actionLabel: 'Ouvrir carnet',
+          dotColor: Color(0xFFC17F24),
+        ),
+      ],
+      explore: [
+        ExploreCard(
+          icon: Icons.qr_code_scanner_rounded,
+          title: 'Scanner les présences',
+          description: 'Utilisez le QR pour pointer les élèves rapidement.',
+          suggested: true,
+        ),
+        ExploreCard(
+          icon: Icons.bar_chart_rounded,
+          title: 'Statistiques de classe',
+          description: 'Analysez les performances par matière et trimestre.',
         ),
       ],
     );

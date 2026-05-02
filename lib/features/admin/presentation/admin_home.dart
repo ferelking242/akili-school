@@ -94,7 +94,7 @@ class _AdminDashboardState extends ConsumerState<_AdminDashboard> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0D3B1E), ScolarisPalette.forestGreen],
+                  colors: [Color(0xFF1A0A00), ScolarisPalette.terracotta],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

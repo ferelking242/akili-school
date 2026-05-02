@@ -189,7 +189,7 @@ class _ParentDashboardState extends ConsumerState<_ParentDashboard> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0D3B1E), _green],
+                  colors: [Color(0xFF1A0A00), _terra],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
