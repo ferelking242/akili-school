@@ -1,17 +1,54 @@
 /// Application roles. Single source of truth.
+///
+/// Le staff (secrétaire, DG, surveillant, finance, admin, etc.)
+/// est regroupé en un seul rôle [staff] avec accès total.
+/// Les permissions granulaires sont définies dans PermissionService.
 enum UserRole {
-  student,
-  parent,
+  staff,
   teacher,
-  surveillance,
-  finance,
-  admin;
+  student,
+  parent;
 
   static UserRole fromString(String value) {
-    return UserRole.values.firstWhere(
-      (r) => r.name.toLowerCase() == value.toLowerCase(),
-      orElse: () => UserRole.student,
-    );
+    switch (value.toLowerCase()) {
+      case 'staff':
+      case 'admin':
+      case 'secretaire':
+      case 'secretariat':
+      case 'dg':
+      case 'directeur':
+      case 'surveillance':
+      case 'surveillant':
+      case 'finance':
+      case 'comptable':
+        return UserRole.staff;
+      case 'teacher':
+      case 'prof':
+      case 'professeur':
+      case 'enseignant':
+        return UserRole.teacher;
+      case 'parent':
+      case 'guardian':
+        return UserRole.parent;
+      case 'student':
+      case 'eleve':
+      case 'élève':
+      default:
+        return UserRole.student;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case UserRole.staff:
+        return 'Staff';
+      case UserRole.teacher:
+        return 'Enseignant';
+      case UserRole.student:
+        return 'Élève';
+      case UserRole.parent:
+        return 'Parent';
+    }
   }
 }
 
@@ -24,6 +61,8 @@ class AppUser {
   final String? schoolId;
   final String? avatarUrl;
   final int? schoolAccentArgb;
+  /// Sous-titre du rôle (ex: "Secrétaire", "DG", "Surveillant") — pour affichage
+  final String? roleTitle;
 
   const AppUser({
     required this.id,
@@ -33,6 +72,7 @@ class AppUser {
     this.schoolId,
     this.avatarUrl,
     this.schoolAccentArgb,
+    this.roleTitle,
   });
 
   AppUser copyWith({
@@ -43,6 +83,7 @@ class AppUser {
     String? schoolId,
     String? avatarUrl,
     int? schoolAccentArgb,
+    String? roleTitle,
   }) =>
       AppUser(
         id: id ?? this.id,
@@ -52,5 +93,8 @@ class AppUser {
         schoolId: schoolId ?? this.schoolId,
         avatarUrl: avatarUrl ?? this.avatarUrl,
         schoolAccentArgb: schoolAccentArgb ?? this.schoolAccentArgb,
+        roleTitle: roleTitle ?? this.roleTitle,
       );
+
+  String get displayRole => roleTitle ?? role.label;
 }
