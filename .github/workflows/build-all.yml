@@ -40,8 +40,17 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Configure Gradle for retries
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.internal.http.connectionTimeout=120000" >> ~/.gradle/gradle.properties
+          echo "org.gradle.internal.http.socketTimeout=120000" >> ~/.gradle/gradle.properties
       - name: Build APK (${{ matrix.abi }})
-        run: flutter build apk --release --target-platform ${{ matrix.target }} --split-per-abi
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          command: flutter build apk --release --target-platform ${{ matrix.target }} --split-per-abi
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
