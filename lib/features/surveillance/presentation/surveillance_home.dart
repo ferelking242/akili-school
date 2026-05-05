@@ -14,7 +14,7 @@ class SurveillanceHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResponsiveRoleShell(
-      role: UserRole.surveillance,
+      role: UserRole.staff,
       title: 'Scolaris',
       groups: const [
         RoleNavGroup(labelKey: 'sections.setup', entries: [

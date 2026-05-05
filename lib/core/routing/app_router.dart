@@ -6,10 +6,8 @@ import '../../domain/entities/user_entity.dart';
 import '../../features/admin/presentation/admin_home.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
-import '../../features/finance/presentation/finance_home.dart';
 import '../../features/parent/presentation/parent_home.dart';
 import '../../features/student/presentation/student_home.dart';
-import '../../features/surveillance/presentation/surveillance_home.dart';
 import '../../features/teacher/presentation/teacher_home.dart';
 import '../../presentation/providers/auth_providers.dart';
 
@@ -19,9 +17,7 @@ class AppRoutes {
   static const student = '/student';
   static const parent = '/parent';
   static const teacher = '/teacher';
-  static const surveillance = '/surveillance';
-  static const finance = '/finance';
-  static const admin = '/admin';
+  static const staff = '/staff';
 }
 
 String roleHome(UserRole role) {
@@ -32,12 +28,8 @@ String roleHome(UserRole role) {
       return AppRoutes.parent;
     case UserRole.teacher:
       return AppRoutes.teacher;
-    case UserRole.surveillance:
-      return AppRoutes.surveillance;
-    case UserRole.finance:
-      return AppRoutes.finance;
-    case UserRole.admin:
-      return AppRoutes.admin;
+    case UserRole.staff:
+      return AppRoutes.staff;
   }
 }
 
@@ -74,12 +66,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: AppRoutes.parent, builder: (_, __) => const ParentHome()),
       GoRoute(path: AppRoutes.teacher, builder: (_, __) => const TeacherHome()),
-      GoRoute(
-        path: AppRoutes.surveillance,
-        builder: (_, __) => const SurveillanceHome(),
-      ),
-      GoRoute(path: AppRoutes.finance, builder: (_, __) => const FinanceHome()),
-      GoRoute(path: AppRoutes.admin, builder: (_, __) => const AdminHome()),
+      GoRoute(path: AppRoutes.staff, builder: (_, __) => const AdminHome()),
     ],
   );
 });

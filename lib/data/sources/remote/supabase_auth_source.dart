@@ -58,15 +58,20 @@ class SupabaseAuthSource {
   }
 
   UserRole _detectRole(String local) {
-    if (local.contains('admin')) return UserRole.admin;
+    if (local.contains('admin') ||
+        local.contains('finance') ||
+        local.contains('survey') ||
+        local.contains('surveillance') ||
+        local.contains('staff') ||
+        local.contains('secretaire') ||
+        local.contains('dg') ||
+        local.contains('directeur')) {
+      return UserRole.staff;
+    }
     if (local.contains('teacher') || local.contains('prof')) {
       return UserRole.teacher;
     }
     if (local.contains('parent')) return UserRole.parent;
-    if (local.contains('finance')) return UserRole.finance;
-    if (local.contains('survey') || local.contains('surveillance')) {
-      return UserRole.surveillance;
-    }
     return UserRole.student;
   }
 

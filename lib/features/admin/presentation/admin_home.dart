@@ -27,7 +27,7 @@ class AdminHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResponsiveRoleShell(
-      role: UserRole.admin,
+      role: UserRole.staff,
       title: 'Scolaris',
       groups: const [
         RoleNavGroup(labelKey: 'sections.setup', entries: [

@@ -11,24 +11,22 @@ class PermissionService {
   bool canViewDashboard(AppUser? u) => u != null;
 
   bool canEditGrades(AppUser? u) =>
-      u != null && (u.role == UserRole.teacher || u.role == UserRole.admin);
+      u != null && (u.role == UserRole.teacher || u.role == UserRole.staff);
 
   bool canMarkAttendance(AppUser? u) =>
       u != null &&
       (u.role == UserRole.teacher ||
-          u.role == UserRole.surveillance ||
-          u.role == UserRole.admin);
+          u.role == UserRole.staff);
 
   bool canManagePayments(AppUser? u) =>
-      u != null && (u.role == UserRole.finance || u.role == UserRole.admin);
+      u != null && u.role == UserRole.staff;
 
-  bool canManageUsers(AppUser? u) => u != null && u.role == UserRole.admin;
+  bool canManageUsers(AppUser? u) => u != null && u.role == UserRole.staff;
 
   bool canViewChildren(AppUser? u) => u?.role == UserRole.parent;
 
   bool canScanQr(AppUser? u) =>
       u != null &&
-      (u.role == UserRole.surveillance ||
-          u.role == UserRole.teacher ||
-          u.role == UserRole.admin);
+      (u.role == UserRole.staff ||
+          u.role == UserRole.teacher);
 }

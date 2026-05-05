@@ -14,7 +14,7 @@ class FinanceHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResponsiveRoleShell(
-      role: UserRole.finance,
+      role: UserRole.staff,
       title: 'Scolaris',
       groups: const [
         RoleNavGroup(labelKey: 'sections.setup', entries: [
