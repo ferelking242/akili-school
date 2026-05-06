@@ -53,9 +53,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   ];
 
   static const _lottieUrls = [
-    'https://assets6.lottiefiles.com/packages/lf20_ib4hcbca.json',
-    'https://assets2.lottiefiles.com/packages/lf20_t9gkkhz4.json',
-    'https://assets9.lottiefiles.com/packages/lf20_pprxh53t.json',
+    'assets/lottie/login_hero.json',
+    'assets/lottie/student.json',
+    'assets/lottie/school_building.json',
   ];
 
   @override
@@ -744,7 +744,7 @@ class _LottieSafe extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Lottie.network(
+    return Lottie.asset(
       url,
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) => const _LottieFallback(),
