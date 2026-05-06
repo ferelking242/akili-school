@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -331,39 +334,62 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
       children: [
         // Left sidebar
         SizedBox(
-          width: 260,
+          width: 280,
           child: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0D3B1E), Color(0xFF1B5E20)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                colors: [Color(0xFF050F08), Color(0xFF0D3B1E), Color(0xFF1B5E20)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
-            child: Column(
-              children: [
-                const SizedBox(height: 48),
-                _SidebarLogo(),
-                const SizedBox(height: 40),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: _steps.length,
-                    itemBuilder: (_, i) => _SidebarStep(
-                      index: i, label: _steps[i],
-                      current: _step, total: _steps.length,
+            child: Stack(children: [
+              // Subtle pattern
+              Positioned.fill(child: CustomPaint(painter: _SidebarPatternPainter())),
+              Column(
+                children: [
+                  const SizedBox(height: 44),
+                  _SidebarLogo(),
+                  const SizedBox(height: 36),
+                  // Progress ring
+                  _StepProgress(current: _step, total: _steps.length),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: _steps.length,
+                      itemBuilder: (_, i) => _SidebarStep(
+                        index: i, label: _steps[i],
+                        current: _step, total: _steps.length,
+                        onTap: i <= _step ? () => setState(() { _step = i; _globalError = null; }) : null,
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    '© ${DateTime.now().year} Scolaris',
-                    style: TextStyle(color: _white.withOpacity(.4), fontSize: 11),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _white.withOpacity(.06),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _white.withOpacity(.1)),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.shield_outlined, size: 13, color: _gold.withOpacity(.7)),
+                          const SizedBox(width: 6),
+                          Text('Données sécurisées',
+                              style: TextStyle(color: _white.withOpacity(.5), fontSize: 11)),
+                        ]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('© ${DateTime.now().year} Scolaris',
+                          style: TextStyle(color: _white.withOpacity(.3), fontSize: 10)),
+                    ]),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ]),
           ),
         ),
         // Right content
@@ -375,7 +401,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 720),
+                    constraints: const BoxConstraints(maxWidth: 700),
                     child: _buildStepContent(),
                   ),
                 ),
@@ -446,6 +472,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
             icon: Icons.business_outlined,
             title: 'Informations de l\'école',
             subtitle: 'Renseignez les informations principales de votre établissement.',
+            lottie: 'assets/lottie/school_building.json',
           ),
           const SizedBox(height: 28),
 
@@ -528,6 +555,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
             icon: Icons.person_outline_rounded,
             title: 'Compte administrateur',
             subtitle: 'Ce compte aura tous les accès initiaux et pourra configurer les autres rôles.',
+            lottie: 'assets/lottie/admin.json',
           ),
           const SizedBox(height: 16),
           _InfoBanner(
@@ -595,6 +623,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
           icon: Icons.menu_book_outlined,
           title: 'Système éducatif',
           subtitle: 'Choisissez le référentiel pédagogique de votre établissement.',
+          lottie: 'assets/lottie/school_register.json',
         ),
         const SizedBox(height: 24),
 
@@ -633,6 +662,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
           icon: Icons.account_tree_outlined,
           title: 'Structure & Séries',
           subtitle: 'Activez, modifiez ou créez vos séries et classes.',
+          lottie: 'assets/lottie/teacher.json',
         ),
         const SizedBox(height: 24),
 
@@ -701,6 +731,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
           icon: Icons.storage_outlined,
           title: 'Base de données',
           subtitle: 'Choisissez où stocker les données de votre école.',
+          lottie: 'assets/lottie/loading.json',
         ),
         const SizedBox(height: 24),
 
@@ -788,6 +819,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
           icon: Icons.palette_outlined,
           title: 'Personnalisation visuelle',
           subtitle: 'Définissez l\'identité graphique de votre espace Scolaris.',
+          lottie: 'assets/lottie/celebration.json',
         ),
         const SizedBox(height: 24),
 
@@ -861,6 +893,7 @@ class _SchoolRegistrationScreenState extends State<SchoolRegistrationScreen> {
           icon: Icons.fact_check_outlined,
           title: 'Récapitulatif',
           subtitle: 'Vérifiez toutes les informations avant de créer votre école.',
+          lottie: 'assets/lottie/success.json',
         ),
         const SizedBox(height: 24),
 
@@ -935,17 +968,40 @@ class _SidebarLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(children: [
       Container(
-        width: 56, height: 56,
+        width: 64, height: 64,
         decoration: BoxDecoration(
-          color: _white.withOpacity(.1),
-          borderRadius: BorderRadius.circular(16),
+          color: _white.withOpacity(.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _white.withOpacity(.12)),
         ),
-        child: const Icon(Icons.school_rounded, color: _white, size: 32),
+        padding: const EdgeInsets.all(6),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.asset(
+            'assets/images/logo.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Image.asset(
+              'assets/images/logo_transparent.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.school_rounded, color: _gold, size: 36),
+            ),
+          ),
+        ),
       ),
       const SizedBox(height: 10),
       const Text('Scolaris', style: TextStyle(color: _white, fontSize: 20,
-          fontWeight: FontWeight.w800)),
-      const Text('Inscription École', style: TextStyle(color: Color(0x99FFFFFF), fontSize: 12)),
+          fontWeight: FontWeight.w900, letterSpacing: .4)),
+      Container(
+        margin: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: _gold.withOpacity(.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _gold.withOpacity(.25)),
+        ),
+        child: const Text('Inscription École',
+            style: TextStyle(color: _gold, fontSize: 11, fontWeight: FontWeight.w600)),
+      ),
     ]);
   }
 }
@@ -953,48 +1009,72 @@ class _SidebarLogo extends StatelessWidget {
 class _SidebarStep extends StatelessWidget {
   final int index, current, total;
   final String label;
+  final VoidCallback? onTap;
   const _SidebarStep({required this.index, required this.label,
-      required this.current, required this.total});
+      required this.current, required this.total, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final done    = index < current;
     final active  = index == current;
-    final pending = index > current;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(children: [
-        Column(children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            width: 28, height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: done ? _gold : active ? _white : _white.withOpacity(.15),
-            ),
-            child: Center(
-              child: done
-                  ? const Icon(Icons.check_rounded, size: 15, color: _green)
-                  : Text('${index + 1}',
-                      style: TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700,
-                        color: active ? _ink : _white.withOpacity(.5),
-                      )),
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 2),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.fromLTRB(10, 6, 10, 6),
+          decoration: BoxDecoration(
+            color: active ? _white.withOpacity(.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: active ? Border.all(color: _white.withOpacity(.15)) : null,
           ),
-          if (index < total - 1)
-            Container(width: 2, height: 28,
-                color: done ? _gold.withOpacity(.4) : _white.withOpacity(.1)),
-        ]),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(label, style: TextStyle(
-            color: active ? _white : done ? _gold : _white.withOpacity(.45),
-            fontSize: 13, fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-          )),
+          child: Row(children: [
+            Column(children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 28, height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done ? _gold : active ? _white : _white.withOpacity(.12),
+                  boxShadow: active ? [BoxShadow(color: _white.withOpacity(.2), blurRadius: 8)] : [],
+                ),
+                child: Center(
+                  child: done
+                      ? const Icon(Icons.check_rounded, size: 14, color: Color(0xFF0D3B1E))
+                      : Text('${index + 1}',
+                          style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w800,
+                            color: active ? _ink : _white.withOpacity(.45),
+                          )),
+                ),
+              ),
+              if (index < total - 1)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 2, height: 24,
+                  color: done ? _gold.withOpacity(.5) : _white.withOpacity(.08),
+                ),
+            ]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label, style: TextStyle(
+                  color: active ? _white : done ? _gold : _white.withOpacity(.4),
+                  fontSize: 12.5,
+                  fontWeight: active ? FontWeight.w700 : done ? FontWeight.w500 : FontWeight.w400,
+                )),
+                if (done && onTap != null)
+                  Text('Appuyer pour modifier',
+                      style: TextStyle(color: _gold.withOpacity(.5), fontSize: 9.5)),
+              ]),
+            ),
+            if (done)
+              Icon(Icons.edit_outlined, size: 12, color: _gold.withOpacity(.5)),
+          ]),
         ),
-      ]),
+      ),
     );
   }
 }
@@ -1151,23 +1231,168 @@ class _BottomNav extends StatelessWidget {
 class _StepHeader extends StatelessWidget {
   final IconData icon;
   final String title, subtitle;
-  const _StepHeader({required this.icon, required this.title, required this.subtitle});
+  final String? lottie;
+  const _StepHeader({required this.icon, required this.title,
+      required this.subtitle, this.lottie});
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(
-        width: 48, height: 48,
-        decoration: BoxDecoration(color: _terra.withOpacity(.1),
-            borderRadius: BorderRadius.circular(14)),
-        child: Icon(icon, color: _terra, size: 24),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFF050F08), const Color(0xFF0D3B1E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
       ),
-      const SizedBox(height: 12),
-      Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)),
-      const SizedBox(height: 6),
-      Text(subtitle, style: const TextStyle(fontSize: 14, color: _muted, height: 1.5)),
-    ]);
+      child: Row(children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: _gold.withOpacity(.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _gold.withOpacity(.25)),
+              ),
+              child: Icon(icon, color: _gold, size: 22),
+            ),
+            const SizedBox(height: 14),
+            Text(title, style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w900, color: _white, height: 1.2)),
+            const SizedBox(height: 6),
+            Text(subtitle, style: TextStyle(
+                fontSize: 13, color: _white.withOpacity(.65), height: 1.5)),
+          ]),
+        ),
+        if (lottie != null) ...[
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 100, height: 100,
+            child: Lottie.asset(lottie!, fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+          ),
+        ],
+      ]),
+    );
   }
+}
+
+// ── Step Progress Ring ─────────────────────────────────────────────────────
+class _StepProgress extends StatelessWidget {
+  final int current, total;
+  const _StepProgress({required this.current, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (current + 1) / total;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: _white.withOpacity(.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _white.withOpacity(.1)),
+      ),
+      child: Row(children: [
+        SizedBox(
+          width: 36, height: 36,
+          child: CustomPaint(
+            painter: _RingPainter(pct),
+            child: Center(
+              child: Text('${current + 1}',
+                  style: const TextStyle(color: _white, fontSize: 13,
+                      fontWeight: FontWeight.w900)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Étape ${current + 1} sur $total',
+              style: const TextStyle(color: _white, fontSize: 12, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: pct,
+              backgroundColor: _white.withOpacity(.12),
+              valueColor: const AlwaysStoppedAnimation(_gold),
+              minHeight: 5,
+            ),
+          ),
+        ])),
+      ]),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  final double progress;
+  const _RingPainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = math.min(cx, cy) - 3;
+
+    final bg = Paint()
+      ..color = Colors.white.withOpacity(.1)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(Offset(cx, cy), r, bg);
+
+    final fg = Paint()
+      ..color = const Color(0xFFC17F24)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r),
+      -math.pi / 2,
+      2 * math.pi * progress,
+      false, fg,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) => old.progress != progress;
+}
+
+// ── Sidebar Pattern ────────────────────────────────────────────────────────
+class _SidebarPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = Colors.white.withOpacity(.025)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    const sp = 40.0;
+    final cols = (size.width / sp).ceil() + 1;
+    final rows = (size.height / sp).ceil() + 1;
+
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        final cx = c * sp;
+        final cy = r * sp;
+        final path = Path();
+        for (int i = 0; i < 6; i++) {
+          final a = (i * 60 - 30) * math.pi / 180;
+          final x = cx + 14 * math.cos(a);
+          final y = cy + 14 * math.sin(a);
+          if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+        }
+        path.close();
+        canvas.drawPath(path, p);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }
 
 class _SectionLabel extends StatelessWidget {
