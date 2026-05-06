@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/routing/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../presentation/providers/auth_providers.dart';
 import 'forgot_password_screen.dart';
@@ -267,6 +269,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ],
           const SizedBox(height: 24),
           _PrimaryBtn(label: 'Se connecter', loading: _loading, onTap: _submit),
+          const SizedBox(height: 16),
+          Row(children: [
+            const Expanded(child: Divider(color: _border, height: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text('ou', style: TextStyle(color: _muted.withOpacity(.6), fontSize: 12)),
+            ),
+            const Expanded(child: Divider(color: _border, height: 1)),
+          ]),
+          const SizedBox(height: 16),
+          _RegisterSchoolBtn(onTap: () => context.go(AppRoutes.registerSchool)),
         ],
       ),
     );
@@ -1009,6 +1022,44 @@ class _RoleChip extends StatelessWidget {
           Text(label, style: TextStyle(
               color: selected ? _white : _ink,
               fontSize: 12.5, fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
+  }
+}
+
+class _RegisterSchoolBtn extends StatelessWidget {
+  final VoidCallback onTap;
+  const _RegisterSchoolBtn({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F7F0),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF1B5E20).withOpacity(.35), width: 1.5),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(
+            width: 28, height: 28,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1B5E20).withOpacity(.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.add_business_outlined, size: 16,
+                color: Color(0xFF1B5E20)),
+          ),
+          const SizedBox(width: 10),
+          const Text('Inscrire mon école',
+              style: TextStyle(
+                color: Color(0xFF1B5E20),
+                fontSize: 14, fontWeight: FontWeight.w700,
+              )),
         ]),
       ),
     );

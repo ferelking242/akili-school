@@ -7,29 +7,27 @@ import '../../features/admin/presentation/admin_home.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/parent/presentation/parent_home.dart';
+import '../../features/school_registration/school_registration_screen.dart';
 import '../../features/student/presentation/student_home.dart';
 import '../../features/teacher/presentation/teacher_home.dart';
 import '../../presentation/providers/auth_providers.dart';
 
 class AppRoutes {
-  static const splash = '/';
-  static const login = '/login';
-  static const student = '/student';
-  static const parent = '/parent';
-  static const teacher = '/teacher';
-  static const staff = '/staff';
+  static const splash          = '/';
+  static const login           = '/login';
+  static const registerSchool  = '/register-school';
+  static const student         = '/student';
+  static const parent          = '/parent';
+  static const teacher         = '/teacher';
+  static const staff           = '/staff';
 }
 
 String roleHome(UserRole role) {
   switch (role) {
-    case UserRole.student:
-      return AppRoutes.student;
-    case UserRole.parent:
-      return AppRoutes.parent;
-    case UserRole.teacher:
-      return AppRoutes.teacher;
-    case UserRole.staff:
-      return AppRoutes.staff;
+    case UserRole.student:      return AppRoutes.student;
+    case UserRole.parent:       return AppRoutes.parent;
+    case UserRole.teacher:      return AppRoutes.teacher;
+    case UserRole.staff:        return AppRoutes.staff;
   }
 }
 
@@ -39,34 +37,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: _AuthListenable(ref),
     redirect: (ctx, state) {
       final user = ref.read(authSessionProvider);
-      final loc = state.matchedLocation;
-      final atSplash = loc == AppRoutes.splash;
-      final atLogin = loc == AppRoutes.login;
+      final loc  = state.matchedLocation;
+      final atSplash          = loc == AppRoutes.splash;
+      final atLogin           = loc == AppRoutes.login;
+      final atRegisterSchool  = loc == AppRoutes.registerSchool;
+
+      // Registration page is public — no redirect needed.
+      if (atRegisterSchool) return null;
 
       if (user == null) {
-        // Not logged in → must be at login (splash bounces to login).
         if (atLogin) return null;
         return AppRoutes.login;
       }
 
-      // Logged in → not allowed back to login/splash.
       if (atLogin || atSplash) return roleHome(user.role);
 
-      // Enforce role-bounded subtrees.
       final home = roleHome(user.role);
       if (!loc.startsWith(home)) return home;
       return null;
     },
     routes: [
-      GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
-      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
-      GoRoute(
-        path: AppRoutes.student,
-        builder: (_, __) => const StudentHome(),
-      ),
-      GoRoute(path: AppRoutes.parent, builder: (_, __) => const ParentHome()),
-      GoRoute(path: AppRoutes.teacher, builder: (_, __) => const TeacherHome()),
-      GoRoute(path: AppRoutes.staff, builder: (_, __) => const AdminHome()),
+      GoRoute(path: AppRoutes.splash,         builder: (_, __) => const SplashScreen()),
+      GoRoute(path: AppRoutes.login,          builder: (_, __) => const LoginScreen()),
+      GoRoute(path: AppRoutes.registerSchool, builder: (_, __) => const SchoolRegistrationScreen()),
+      GoRoute(path: AppRoutes.student,        builder: (_, __) => const StudentHome()),
+      GoRoute(path: AppRoutes.parent,         builder: (_, __) => const ParentHome()),
+      GoRoute(path: AppRoutes.teacher,        builder: (_, __) => const TeacherHome()),
+      GoRoute(path: AppRoutes.staff,          builder: (_, __) => const AdminHome()),
     ],
   );
 });

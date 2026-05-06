@@ -1,73 +1,83 @@
-# Akili School
+# Scolaris
 
-Multi-platform Flutter app (web, mobile, desktop) for SaaS-grade school management.
+Plateforme SaaS multi-rôles de gestion scolaire pour l'Afrique (web, mobile, desktop) — Flutter + Supabase.
 
-## Quick start
+## Run & Operate
 
-This Replit runs the **Flutter web** build on port 5000 via the `Start application` workflow:
+```bash
+# Build Flutter web
+export PATH="/home/runner/flutter/bin:$PATH"
+flutter build web --release --base-href "/"
 
+# Serve the built app (port 5000)
+node serve.js
 ```
-flutter run -d web-server --web-hostname 0.0.0.0 --web-port 5000 --release
-```
 
-Compilation takes ~1 minute on a cold cache. Subsequent reloads are fast.
+**Workflow "Start application"** : `node serve.js` (sert `build/web/` sur le port 5000)
 
-## Demo accounts (mock auth)
+**Env vars** : Supabase URL et anon key sont codés dans `lib/core/config/app_config.dart`.
 
-The app falls back to a mock auth source when `SUPABASE_URL` / `SUPABASE_ANON_KEY` are not provided. Sign in with any of:
+## Stack
 
-- `student@akili.school`
-- `parent@akili.school`
-- `teacher@akili.school`
-- `surveillance@akili.school`
-- `finance@akili.school`
-- `admin@akili.school`
+- Flutter 3.27.x · Dart >=3.5.0
+- Supabase (URL: https://iaxwvgqusxyhmyansawi.supabase.co)
+- go_router · flutter_riverpod · easy_localization
+- flex_color_scheme · flutter_screenutil · responsive_framework
+- supabase_flutter · uuid · hive
 
-Password: `demo1234`. Role is inferred from the local-part of the email.
-
-## Architecture
-
-Strict Clean Architecture (UI → Provider → UseCase → Repository → Service):
+## Where things live
 
 ```
 lib/
-├── core/             config · theme · localization · permissions · routing · services
-├── data/             models · sources (remote/local) · repository implementations
-├── domain/           pure entities · repository interfaces · use cases
-├── presentation/     riverpod providers · global widgets
-├── features/         auth · student · parent · teacher · surveillance · finance · admin
-└── shared/           desktop_shell · mobile_shell · responsive shell · widgets
+├── core/           config · theme · routing · localization · services
+├── data/           repositories · sources (supabase)
+├── domain/         entities · usecases · repositories interfaces
+├── presentation/   providers · global auth state
+├── features/
+│   ├── auth/           login + forgot password screens
+│   ├── school_registration/  wizard 7 étapes d'inscription école
+│   ├── admin/          espace admin
+│   ├── student/        espace étudiant
+│   ├── teacher/        espace enseignant
+│   ├── parent/         espace parent
+│   ├── finance/        espace finance
+│   └── surveillance/   espace surveillance
+└── shared/         shells desktop/mobile · widgets communs
 ```
 
-Key principles:
-- **UI never contains business logic** — every screen calls a provider.
-- **RBAC** is centralized in `lib/core/permissions/permissions.dart`. Never inline a role check in UI.
-- **Platform branching** lives in `lib/core/platform/platform_utils.dart` and the `ResponsiveRoleShell` widget.
+DB Schema: → Supabase project `iaxwvgqusxyhmyansawi`  
+Tables: `schools`, `school_branches`, `school_founders`, `school_series`, `school_classes`
 
-## Localization
+## Architecture decisions
 
-`assets/translations/{en,fr,sw,ln}.json` — managed by `easy_localization`. To add a new language, drop a JSON file and register the locale in `lib/core/localization/locales.dart`.
+- **Clean Architecture stricte** : UI → Provider → UseCase → Repository → Source
+- **Mock auth** : fallback automatique si Supabase non disponible (pour démo)
+- **Rôles dynamiques** : pas de super admin figé — le fondateur a accès total, permissions modifiables
+- **Multi-systèmes éducatifs** : francophone, anglophone, LMD, technique, personnalisé
+- **Serve.js** : sert le build Flutter web statique depuis `build/web/` sur le port 5000
 
-## Theming
+## Product
 
-`flex_color_scheme` with light/dark + dynamic accent. Per-school branding overrides the accent at runtime via `ThemeController.setAccent()`.
+- **Login** : e-mail/mot de passe + QR code carte étudiant + 6 rôles démo
+- **Inscription école** (7 étapes) : infos école · admin fondateur · système éducatif · séries/classes · base de données · design · récap
+- **Espaces rôles** : étudiant · parent · enseignant · surveillance · finance · admin
+- **Multi-filiales** : gestion multi-campus par école
+- **Personnalisation** : couleurs, slug, logo par école
 
-## Mobile vs Desktop UX
+## User preferences
 
-- **Wide form factor (desktop / wide web)**: Fluent-style sidebar (collapsible, inner-radius) + topbar + content area.
-- **Mobile / small web**: Material 3 with a floating, rounded, shadowed bottom dock (built on `salomon_bottom_bar`).
+- Design premium SaaS niveau africain (couleurs : terracotta #8B1A00, or #C17F24, vert #1B5E20)
+- Tous les textes en **français**
+- Inscription école = wizard 7 étapes avec stepper latéral (desktop) ou header (mobile)
 
-Selection happens automatically based on viewport width and platform.
+## Gotchas
 
-## CI / CD
+- Toujours `flutter build web --release` avant de redémarrer `node serve.js`
+- Le `serve.js` sert `build/web/` (racine du projet) — pas `scolaris/build/web`
+- La route `/register-school` est publique (pas de redirect auth)
+- Les clés Supabase sont hardcodées dans `app_config.dart` (dev only)
 
-GitHub Actions are wired in `.github/workflows/`:
+## Pointers
 
-- `build-all.yml` → Android (every ABI: armeabi-v7a, arm64-v8a, x86_64) **first**, then iOS, Web, Linux, Windows, macOS. Triggers on push, PR, tag, manual.
-- `build-android-arm64.yml` → A focused, fast pipeline that only produces `app-arm64-v8a-release.apk`.
-
-Repo: https://github.com/ferelking242/akili-school
-
-## Recent changes
-
-- 2026-04-29: Initial scaffolding. All 6 role shells, both desktop and mobile shells, 4-language packs, charts, QR, RBAC, GitHub Actions, public repo created and pushed.
+- Skill workflows : `.local/skills/workflows/SKILL.md`
+- Skill packages : `.local/skills/package-management/SKILL.md`

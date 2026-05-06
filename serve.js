@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 5000;
-const WEB_DIR = path.join(__dirname, 'scolaris', 'build', 'web');
+const WEB_DIR = path.join(__dirname, 'build', 'web');
 
 const MIME = {
   '.html': 'text/html',
