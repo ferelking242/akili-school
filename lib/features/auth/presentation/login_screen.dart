@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +25,8 @@ const _muted  = Color(0xFF7A5C44);
 const _border = Color(0xFFDDCCBB);
 const _white  = Colors.white;
 const _dark   = Color(0xFF0D1117);
+const _bg0    = Color(0xFF0A2010);
+const _bg1    = Color(0xFF1B5E20);
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,10 +57,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     ('admin',        Icons.admin_panel_settings_outlined, 'Admin'),
   ];
 
-  static const _lottieUrls = [
-    'assets/lottie/login_hero.json',
-    'assets/lottie/student.json',
-    'assets/lottie/school_building.json',
+  static const _slides = [
+    _Slide(
+      lottie: 'assets/lottie/school_building.json',
+      title: 'La plateforme scolaire\nde l\'Afrique de demain.',
+      sub: 'Gérez votre établissement,\nsuivez les performances, connectez toute\nla communauté éducative.',
+    ),
+    _Slide(
+      lottie: 'assets/lottie/student.json',
+      title: 'Un espace dédié\nà chaque acteur.',
+      sub: 'Élèves, parents, enseignants,\nadministrateurs — chaque rôle a son\ninterface optimisée.',
+    ),
+    _Slide(
+      lottie: 'assets/lottie/teacher.json',
+      title: 'Multi-filiales,\nmulti-systèmes.',
+      sub: 'Francophone, anglophone, LMD,\ntechnique — un seul outil pour\ntous les établissements.',
+    ),
   ];
 
   @override
@@ -115,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final isWide = size.width > 720;
+    final isWide = size.width > 800;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
@@ -131,9 +148,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget _buildWideLayout(BuildContext context, Size size) {
     return Row(
       children: [
-        Expanded(child: _LeftHero(lottieUrls: _lottieUrls)),
-        SizedBox(
-          width: 480,
+        Expanded(
+          flex: 55,
+          child: _LeftHero(slides: _slides),
+        ),
+        Expanded(
+          flex: 45,
           child: _buildFormPanel(context),
         ),
       ],
@@ -156,41 +176,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         onClose: () => setState(() => _showQrScanner = false));
 
     return Container(
-      color: _white,
+      color: const Color(0xFFFDFAF7),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 36),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _BrandMark(),
+            const SizedBox(height: 32),
+
+            const Text('Connexion', style: TextStyle(
+              fontSize: 26, fontWeight: FontWeight.w900, color: _ink,
+            )),
+            const SizedBox(height: 4),
+            Text('Accédez à votre espace Scolaris',
+                style: TextStyle(color: _muted, fontSize: 13)),
             const SizedBox(height: 28),
 
-            TabBar(
-              controller: _tabCtrl,
-              labelColor: _terra,
-              unselectedLabelColor: _muted,
-              indicatorColor: _terra,
-              indicatorWeight: 2.5,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-              tabs: const [
-                Tab(text: 'Connexion'),
-                Tab(text: 'Scanner ID'),
-              ],
-            ),
-            const SizedBox(height: 28),
-
-            SizedBox(
-              height: 480,
-              child: TabBarView(
-                controller: _tabCtrl,
-                children: [
-                  _buildEmailForm(),
-                  _buildQrTab(),
-                ],
+            Container(
+              decoration: BoxDecoration(
+                color: _white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _border.withOpacity(.5)),
+                boxShadow: [BoxShadow(color: _ink.withOpacity(.04), blurRadius: 20, offset: const Offset(0, 4))],
               ),
+              child: Column(children: [
+                _tabBar(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: SizedBox(
+                    height: 380,
+                    child: TabBarView(
+                      controller: _tabCtrl,
+                      children: [
+                        _buildEmailForm(),
+                        _buildQrTab(),
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             _divider('Comptes de démonstration'),
             const SizedBox(height: 12),
             Wrap(
@@ -207,10 +235,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             const SizedBox(height: 8),
             Center(
               child: Text('Mot de passe : demo1234',
-                  style: TextStyle(color: _muted.withOpacity(.7), fontSize: 11)),
+                  style: TextStyle(color: _muted.withOpacity(.6), fontSize: 11)),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _tabBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F0EC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: TabBar(
+        controller: _tabCtrl,
+        labelColor: _terra,
+        unselectedLabelColor: _muted,
+        indicator: BoxDecoration(
+          color: _white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+          border: Border(bottom: BorderSide(color: _terra, width: 2.5)),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+        tabs: const [
+          Tab(text: 'Connexion'),
+          Tab(text: 'Scanner ID'),
+        ],
       ),
     );
   }
@@ -221,6 +275,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SizedBox(height: 20),
           _fieldLabel('Adresse e-mail'),
           const SizedBox(height: 6),
           _STextField(
@@ -267,17 +322,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             const SizedBox(height: 12),
             _ErrorBanner(message: _error!),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           _PrimaryBtn(label: 'Se connecter', loading: _loading, onTap: _submit),
           const SizedBox(height: 16),
-          Row(children: [
-            const Expanded(child: Divider(color: _border, height: 1)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text('ou', style: TextStyle(color: _muted.withOpacity(.6), fontSize: 12)),
-            ),
-            const Expanded(child: Divider(color: _border, height: 1)),
-          ]),
+          _dividerSmall('ou'),
           const SizedBox(height: 16),
           _RegisterSchoolBtn(onTap: () => context.go(AppRoutes.registerSchool)),
         ],
@@ -289,50 +337,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: 20),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5EEE6),
+            gradient: LinearGradient(
+              colors: [const Color(0xFF0D3B1E).withOpacity(.06), _gold.withOpacity(.06)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _terra.withOpacity(.15)),
+            border: Border.all(color: _terra.withOpacity(.12)),
           ),
           child: Column(children: [
             SizedBox(
-              height: 160,
+              height: 140,
               child: Lottie.asset(
-                'assets/lottie/student_login.json',
+                'assets/lottie/qr_scan.json',
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(
-                    color: _terra.withOpacity(.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.credit_card_rounded, color: _terra, size: 40),
-                ),
+                errorBuilder: (_, __, ___) => Icon(Icons.qr_code_rounded, size: 80, color: _terra.withOpacity(.4)),
               ),
             ),
             const SizedBox(height: 10),
             const Text('Connectez-vous avec votre\ncarte étudiante',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: _ink, fontSize: 16,
+                style: TextStyle(color: _ink, fontSize: 15,
                     fontWeight: FontWeight.w700, height: 1.4)),
             const SizedBox(height: 6),
             Text(
-              'Scannez le QR code imprimé sur votre carte étudiante. '
-              'Il contient votre identifiant unique et vos informations d\'établissement.',
+              'Scannez le QR code de votre carte étudiante pour vous connecter instantanément.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: _muted, fontSize: 12.5, height: 1.5),
+              style: TextStyle(color: _muted, fontSize: 12, height: 1.5),
             ),
           ]),
         ),
-        const SizedBox(height: 20),
-
+        const SizedBox(height: 16),
         if (_error != null) ...[
           _ErrorBanner(message: _error!),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
         ],
-
         _PrimaryBtn(
           label: 'Scanner ma carte étudiante',
           loading: _loading,
@@ -340,41 +383,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           onTap: () => setState(() { _showQrScanner = true; _error = null; }),
         ),
         const SizedBox(height: 12),
-
-        Row(children: [
-          const Expanded(child: Divider(color: _border)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text('ou', style: TextStyle(color: _muted.withOpacity(.6), fontSize: 12)),
-          ),
-          const Expanded(child: Divider(color: _border)),
-        ]),
-        const SizedBox(height: 12),
-
         _SecondaryBtn(
           label: 'Saisir mon code manuellement',
           icon: Icons.keyboard_outlined,
           onTap: () => _tabCtrl.animateTo(0),
-        ),
-
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: _gold.withOpacity(.07),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _gold.withOpacity(.2)),
-          ),
-          child: Row(children: [
-            Icon(Icons.info_outline_rounded, color: _gold, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Le QR code de votre carte contient votre ID étudiant, votre établissement et votre promotion.',
-                style: TextStyle(color: _muted, fontSize: 11.5, height: 1.5),
-              ),
-            ),
-          ]),
         ),
       ],
     );
@@ -391,94 +403,250 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     ),
     const Expanded(child: Divider(color: _border, height: 1)),
   ]);
+
+  Widget _dividerSmall(String label) => Row(children: [
+    const Expanded(child: Divider(color: _border, height: 1)),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Text(label, style: TextStyle(color: _muted.withOpacity(.6), fontSize: 12)),
+    ),
+    const Expanded(child: Divider(color: _border, height: 1)),
+  ]);
 }
 
-// ── Left Hero Panel (wide layout) ─────────────────────────────────────────
+// ── Slide data ─────────────────────────────────────────────────────────────
+class _Slide {
+  final String lottie, title, sub;
+  const _Slide({required this.lottie, required this.title, required this.sub});
+}
+
+// ── Left Hero Panel ────────────────────────────────────────────────────────
 class _LeftHero extends StatefulWidget {
-  final List<String> lottieUrls;
-  const _LeftHero({required this.lottieUrls});
+  final List<_Slide> slides;
+  const _LeftHero({required this.slides});
   @override
   State<_LeftHero> createState() => _LeftHeroState();
 }
 
-class _LeftHeroState extends State<_LeftHero> {
-  int _lottieIdx = 0;
+class _LeftHeroState extends State<_LeftHero> with TickerProviderStateMixin {
+  int _idx = 0;
+  Timer? _timer;
+  late AnimationController _fadeCtrl;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 600));
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeInOut);
+    _fadeCtrl.forward();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 6), (_) => _goTo((_idx + 1) % widget.slides.length));
+  }
+
+  void _goTo(int i) {
+    if (!mounted) return;
+    _fadeCtrl.reverse().then((_) {
+      if (mounted) {
+        setState(() => _idx = i);
+        _fadeCtrl.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0D3B1E), Color(0xFF1B5E20)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Stack(fit: StackFit.expand, children: [
-        _AfricanBg(),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            SizedBox(
-              height: 300,
-              child: _LottieSafe(url: widget.lottieUrls[_lottieIdx]),
+    final slide = widget.slides[_idx];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // African gradient background
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF071A0A), Color(0xFF0D3B1E), Color(0xFF1B5E20)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomCenter,
             ),
-            const SizedBox(height: 32),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'La plateforme scolaire\nde l\'Afrique de demain.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: _white, fontSize: 26,
-                    fontWeight: FontWeight.w800, height: 1.3),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Text(
-                'Gérez votre établissement, suivez les performances et connectez toute la communauté éducative.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: _white.withOpacity(.7), fontSize: 13, height: 1.6),
-              ),
-            ),
-            const SizedBox(height: 28),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              _FeaturePill(icon: Icons.people_rounded, label: '6 rôles'),
-              const SizedBox(width: 8),
-              _FeaturePill(icon: Icons.wifi_off_rounded, label: 'Hors-ligne'),
-              const SizedBox(width: 8),
-              _FeaturePill(icon: Icons.translate_rounded, label: '4 langues'),
-            ]),
-            const SizedBox(height: 24),
-            Row(mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.lottieUrls.length, (i) =>
-                GestureDetector(
-                  onTap: () => setState(() => _lottieIdx = i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: i == _lottieIdx ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: i == _lottieIdx ? _gold : _white.withOpacity(.3),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          bottom: 24, left: 0, right: 0,
-          child: Center(
-            child: Text('© ${DateTime.now().year} Scolaris · Savoir, Héritage, Avenir',
-                style: TextStyle(color: _white.withOpacity(.4), fontSize: 11)),
           ),
         ),
-      ]),
+
+        // African kente/adinkra pattern
+        CustomPaint(painter: _AfricanPatternPainter()),
+
+        // Terracotta accent stripe top
+        Positioned(
+          top: 0, left: 0, right: 0,
+          child: Container(
+            height: 4,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_terra, _gold, _orange],
+              ),
+            ),
+          ),
+        ),
+
+        // Full-panel Lottie (centered, large)
+        FadeTransition(
+          opacity: _fadeAnim,
+          child: Align(
+            alignment: const Alignment(0, -0.15),
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.52,
+              width: double.infinity,
+              child: Lottie.asset(
+                slide.lottie,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ),
+
+        // Bottom gradient for text readability
+        Positioned(
+          bottom: 0, left: 0, right: 0,
+          height: MediaQuery.sizeOf(context).height * 0.55,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  const Color(0xFF071A0A).withOpacity(.85),
+                  const Color(0xFF071A0A),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+
+        // Bottom content overlay
+        Positioned(
+          bottom: 0, left: 0, right: 0,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 0, 40, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Logo
+                Row(children: [
+                  _LogoImg(size: 44),
+                  const SizedBox(width: 12),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Scolaris', style: TextStyle(
+                      color: _white, fontSize: 20, fontWeight: FontWeight.w900,
+                      letterSpacing: .5,
+                    )),
+                    Text(AppConfig.appTagline, style: TextStyle(
+                      color: _gold.withOpacity(.8), fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    )),
+                  ]),
+                ]),
+                const SizedBox(height: 20),
+
+                // Headline
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: Text(slide.title, style: const TextStyle(
+                    color: _white, fontSize: 26, fontWeight: FontWeight.w900, height: 1.2,
+                  )),
+                ),
+                const SizedBox(height: 10),
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: Text(slide.sub, style: TextStyle(
+                    color: _white.withOpacity(.72), fontSize: 13, height: 1.6,
+                  )),
+                ),
+                const SizedBox(height: 20),
+
+                // Feature pills
+                Wrap(spacing: 8, runSpacing: 8, children: const [
+                  _FeaturePill(icon: Icons.people_rounded, label: '6 rôles'),
+                  _FeaturePill(icon: Icons.wifi_off_rounded, label: 'Hors-ligne'),
+                  _FeaturePill(icon: Icons.translate_rounded, label: '4 langues'),
+                  _FeaturePill(icon: Icons.public_rounded, label: 'Afrique'),
+                ]),
+                const SizedBox(height: 20),
+
+                // Carousel dots
+                Row(children: [
+                  ...List.generate(widget.slides.length, (i) =>
+                    GestureDetector(
+                      onTap: () { _startTimer(); _goTo(i); },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.only(right: 8),
+                        width: i == _idx ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: i == _idx ? _gold : _white.withOpacity(.25),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text('© ${DateTime.now().year} Scolaris',
+                      style: TextStyle(color: _white.withOpacity(.3), fontSize: 10)),
+                ]),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Logo Widget ────────────────────────────────────────────────────────────
+class _LogoImg extends StatelessWidget {
+  final double size;
+  const _LogoImg({this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size * 0.22),
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: size, height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/logo_transparent.png',
+          width: size, height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: size, height: size,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_terra, _orange]),
+              borderRadius: BorderRadius.circular(size * 0.22),
+            ),
+            child: Center(
+              child: Text('S', style: TextStyle(
+                color: _white, fontSize: size * 0.45, fontWeight: FontWeight.w900,
+              )),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -493,44 +661,28 @@ class _MobileHeader extends StatelessWidget {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF1A0A00), _terra],
+          colors: [Color(0xFF071A0A), Color(0xFF1B5E20)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
       child: Column(
         children: [
           Row(children: [
-            Image.asset('assets/images/logo_transparent.png', width: 40, height: 40,
-                errorBuilder: (_, __, ___) => Image.asset(
-                  'assets/images/logo.png', width: 40, height: 40,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.school_rounded, color: _gold, size: 36),
-                )),
+            _LogoImg(size: 40),
             const SizedBox(width: 10),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Scolaris',
-                  style: TextStyle(color: _white, fontSize: 18,
-                      fontWeight: FontWeight.w800)),
-              Text('Savoir, Héritage, Avenir',
-                  style: TextStyle(color: _gold.withOpacity(.8), fontSize: 10,
-                      fontStyle: FontStyle.italic)),
+                  style: TextStyle(color: _white, fontWeight: FontWeight.w900, fontSize: 18)),
+              Text(AppConfig.appTagline,
+                  style: TextStyle(color: _gold.withOpacity(.8), fontSize: 10)),
             ]),
           ]),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 160,
-            child: Lottie.asset('assets/lottie/student_login.json',
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.school_rounded, size: 80, color: _gold)),
-          ),
-          const SizedBox(height: 8),
           const Text('Bienvenue sur Scolaris',
-              style: TextStyle(color: _white, fontSize: 18,
-                  fontWeight: FontWeight.w700)),
+              style: TextStyle(color: _white, fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text('Plateforme scolaire africaine de nouvelle génération',
               textAlign: TextAlign.center,
@@ -541,30 +693,16 @@ class _MobileHeader extends StatelessWidget {
   }
 }
 
-// ── Brand Mark ────────────────────────────────────────────────────────────
+// ── Brand Mark (right panel top) ───────────────────────────────────────────
 class _BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Image.asset(
-        'assets/images/logo_transparent.png',
-        width: 48, height: 48,
-        errorBuilder: (_, __, ___) => Image.asset(
-          'assets/images/logo.png', width: 48, height: 48,
-          errorBuilder: (_, __, ___) => Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [_terra, _orange]),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(child: Icon(Icons.school_rounded, color: _white, size: 26)),
-          ),
-        ),
-      ),
-      const SizedBox(width: 12),
+      _LogoImg(size: 52),
+      const SizedBox(width: 14),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Scolaris',
-            style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 20)),
+            style: TextStyle(color: _ink, fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: .5)),
         Text(AppConfig.appTagline,
             style: TextStyle(color: _muted.withOpacity(.7), fontSize: 11,
                 fontStyle: FontStyle.italic)),
@@ -615,10 +753,8 @@ class _QrScanPanelState extends State<_QrScanPanel> {
             },
           ),
 
-          // Overlay frame
           CustomPaint(painter: _ScanFramePainter()),
 
-          // Top bar
           Positioned(
             top: 0, left: 0, right: 0,
             child: SafeArea(
@@ -649,8 +785,7 @@ class _QrScanPanelState extends State<_QrScanPanel> {
                         color: _white.withOpacity(.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.flashlight_on_rounded,
-                          color: _white, size: 20),
+                      child: const Icon(Icons.flashlight_on_rounded, color: _white, size: 20),
                     ),
                   ),
                 ]),
@@ -658,7 +793,6 @@ class _QrScanPanelState extends State<_QrScanPanel> {
             ),
           ),
 
-          // Bottom info
           Positioned(
             bottom: 0, left: 0, right: 0,
             child: SafeArea(
@@ -711,8 +845,7 @@ class _ScanFramePainter extends CustomPainter {
       ..strokeWidth = 3.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    final r = 12.0;
-    final len = 28.0;
+    const r = 12.0;
     final pts = [
       [Offset(left, top + r), Offset(left, top), Offset(left + r, top)],
       [Offset(left + dim - r, top), Offset(left + dim, top), Offset(left + dim, top + r)],
@@ -737,86 +870,56 @@ class _ScanFramePainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
-// ── Lottie Safe Loader ────────────────────────────────────────────────────
-class _LottieSafe extends StatelessWidget {
-  final String url;
-  const _LottieSafe({required this.url});
-
-  @override
-  Widget build(BuildContext context) {
-    return Lottie.asset(
-      url,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => const _LottieFallback(),
-    );
-  }
-}
-
-class _LottieFallback extends StatelessWidget {
-  const _LottieFallback();
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Icon(Icons.school_rounded,
-          size: 80, color: _gold.withOpacity(.6)),
-    );
-  }
-}
-
-// ── African BG ────────────────────────────────────────────────────────────
-class _AfricanBg extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _AfricanPatternPainter());
-  }
-}
-
+// ── African Pattern Painter ────────────────────────────────────────────────
 class _AfricanPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = _white.withOpacity(.04)
+    final p1 = Paint()
+      ..color = _white.withOpacity(.03)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    const sp = 56.0;
-    final cols = (size.width / sp).ceil() + 1;
-    final rows = (size.height / sp).ceil() + 1;
+      ..strokeWidth = 1.0;
+    final p2 = Paint()
+      ..color = _gold.withOpacity(.04)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    const spacing = 52.0;
+    final cols = (size.width / spacing).ceil() + 1;
+    final rows = (size.height / spacing).ceil() + 1;
+
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
-        _hex(canvas, Offset(c * sp, r * sp), 14, p);
+        final cx = c * spacing + (r.isOdd ? spacing / 2 : 0);
+        final cy = r * spacing * 0.866;
+        _drawHex(canvas, Offset(cx, cy), 18, p1);
+        if ((r + c) % 3 == 0) _drawAdinkra(canvas, Offset(cx, cy), 6, p2);
       }
     }
   }
 
-  void _hex(Canvas canvas, Offset o, double r, Paint p) {
+  void _drawHex(Canvas canvas, Offset center, double r, Paint p) {
     final path = Path();
     for (int i = 0; i < 6; i++) {
-      final a = (i * 60 - 30) * 3.1416 / 180;
-      final x = o.dx + r * _cos(a);
-      final y = o.dy + r * _sin(a);
+      final angle = (i * 60 - 30) * math.pi / 180;
+      final x = center.dx + r * math.cos(angle);
+      final y = center.dy + r * math.sin(angle);
       if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
     }
     path.close();
     canvas.drawPath(path, p);
   }
 
-  double _cos(double a) => (a == 0) ? 1 : (a == 3.1416 / 2) ? 0 : (a == 3.1416) ? -1 : _approxCos(a);
-  double _sin(double a) => _approxCos(3.1416 / 2 - a);
-  double _approxCos(double a) {
-    double r = 1, t = 1, s = -1;
-    for (int i = 1; i < 8; i++) {
-      t *= a * a / ((2 * i - 1) * (2 * i));
-      r += s * t;
-      s = -s;
-    }
-    return r;
+  void _drawAdinkra(Canvas canvas, Offset c, double r, Paint p) {
+    canvas.drawCircle(c, r, p);
+    canvas.drawLine(c.translate(-r, 0), c.translate(r, 0), p);
+    canvas.drawLine(c.translate(0, -r), c.translate(0, r), p);
   }
 
   @override
   bool shouldRepaint(_) => false;
 }
 
-// ── Feature Pill ─────────────────────────────────────────────────────────
+// ── Feature Pill ──────────────────────────────────────────────────────────
 class _FeaturePill extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -825,17 +928,16 @@ class _FeaturePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: _white.withOpacity(.12),
+        color: _white.withOpacity(.10),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _white.withOpacity(.2)),
+        border: Border.all(color: _white.withOpacity(.18)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 13, color: _gold),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: _white, fontSize: 12,
-            fontWeight: FontWeight.w600)),
+        Icon(icon, size: 12, color: _gold),
+        const SizedBox(width: 5),
+        Text(label, style: const TextStyle(color: _white, fontSize: 11, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -865,14 +967,14 @@ class _STextField extends StatelessWidget {
       style: const TextStyle(fontSize: 14, color: _ink),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: _muted.withOpacity(.6), fontSize: 14),
+        hintStyle: TextStyle(color: _muted.withOpacity(.55), fontSize: 14),
         prefixIcon: Icon(icon, size: 18, color: _muted),
         prefixIconConstraints: const BoxConstraints.tightFor(width: 44),
         suffixIcon: suffix,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
         filled: true,
-        fillColor: const Color(0xFFFAF7F4),
+        fillColor: const Color(0xFFF9F5F1),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _border),
@@ -910,7 +1012,7 @@ class _PrimaryBtn extends StatelessWidget {
       onTap: loading ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 52,
+        height: 54,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -922,8 +1024,8 @@ class _PrimaryBtn extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: loading ? [] : [
-            BoxShadow(color: _terra.withOpacity(.35),
-                blurRadius: 14, offset: const Offset(0, 5)),
+            BoxShadow(color: _terra.withOpacity(.4),
+                blurRadius: 16, offset: const Offset(0, 6)),
           ],
         ),
         child: loading
@@ -935,7 +1037,7 @@ class _PrimaryBtn extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 Text(label, style: const TextStyle(color: _white, fontSize: 15,
-                    fontWeight: FontWeight.w700)),
+                    fontWeight: FontWeight.w700, letterSpacing: .3)),
               ]),
       ),
     );
@@ -1007,14 +1109,14 @@ class _RoleChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        height: 34,
+        height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: selected ? _terra : _white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: selected ? _terra : _border),
           boxShadow: selected ? [BoxShadow(
-            color: _terra.withOpacity(.25), blurRadius: 6, offset: const Offset(0, 2))] : [],
+            color: _terra.withOpacity(.25), blurRadius: 8, offset: const Offset(0, 3))] : [],
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 14, color: selected ? _white : _muted),
@@ -1037,28 +1139,34 @@ class _RegisterSchoolBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 52,
+        height: 54,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFFF0F7F0),
+          gradient: LinearGradient(
+            colors: [const Color(0xFF071A0A), const Color(0xFF0D3B1E)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF1B5E20).withOpacity(.35), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF1B5E20).withOpacity(.35),
+                blurRadius: 16, offset: const Offset(0, 6)),
+          ],
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Container(
-            width: 28, height: 28,
+            width: 30, height: 30,
             decoration: BoxDecoration(
-              color: const Color(0xFF1B5E20).withOpacity(.1),
+              color: _gold.withOpacity(.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.add_business_outlined, size: 16,
-                color: Color(0xFF1B5E20)),
+            child: const Icon(Icons.add_business_outlined, size: 16, color: _gold),
           ),
           const SizedBox(width: 10),
           const Text('Inscrire mon école',
               style: TextStyle(
-                color: Color(0xFF1B5E20),
-                fontSize: 14, fontWeight: FontWeight.w700,
+                color: _white,
+                fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: .3,
               )),
         ]),
       ),
