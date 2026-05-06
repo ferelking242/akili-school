@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "Scolaris",
+    "tagline": "Savoir, Héritage, Avenir"
+  },
+  "sections": {
+    "setup": "CONFIGURATION",
+    "activity": "ACTIVITÉ",
+    "account": "COMPTE"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "retry": "Réessayer",
+    "logout": "Se déconnecter",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "theme": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgot": "Mot de passe oublié ?",
+    "loginWithQr": "Connexion par QR",
+    "welcome": "Bon retour",
+    "subWelcome": "Connectez-vous à votre école",
+    "errors": {
+      "invalidEmail": "Email invalide",
+      "shortPassword": "Mot de passe trop court",
+      "failed": "Échec de la connexion"
+    }
+  },
+  "roles": {
+    "student": "Élève",
+    "parent": "Parent",
+    "teacher": "Enseignant",
+    "surveillance": "Surveillance",
+    "finance": "Finance",
+    "admin": "Administrateur"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "courses": "Cours",
+    "grades": "Notes",
+    "attendance": "Présence",
+    "schedule": "Emploi du temps",
+    "messages": "Messages",
+    "children": "Enfants",
+    "payments": "Paiements",
+    "students": "Élèves",
+    "classes": "Classes",
+    "reports": "Rapports",
+    "users": "Utilisateurs",
+    "billing": "Facturation",
+    "library": "Bibliothèque",
+    "qr": "QR"
+  },
+  "dashboard": {
+    "hello": "Bonjour, {name}",
+    "today": "Aujourd'hui",
+    "upcoming": "À venir",
+    "stats": "Statistiques",
+    "presence": "Taux de présence",
+    "average": "Moyenne",
+    "due": "Paiements dus",
+    "noData": "Aucune donnée"
+  }
+}
