@@ -236,56 +236,55 @@ class _BrandRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logo = ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: 32, height: 32,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: _terra,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Center(
+            child: Text('S', style: TextStyle(
+                color: _white, fontWeight: FontWeight.w800, fontSize: 15)),
+          ),
+        ),
+      ),
+    );
+
+    if (collapsed) {
+      return InkWell(
+        onTap: onToggle,
+        child: SizedBox(
+          height: 60,
+          child: Center(child: logo),
+        ),
+      );
+    }
+
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: collapsed ? 0 : 14),
-        child: Row(
-          mainAxisAlignment:
-              collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
-          children: [
-            // Logo
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 32, height: 32,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 32, height: 32,
-                  decoration: BoxDecoration(
-                    color: _terra,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Text('S', style: TextStyle(
-                        color: _white, fontWeight: FontWeight.w800, fontSize: 15)),
-                  ),
-                ),
-              ),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Row(children: [
+          logo,
+          const SizedBox(width: 10),
+          Text(
+            AppConfig.appName,
+            style: const TextStyle(
+              color: _white,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              letterSpacing: 0.3,
             ),
-            if (!collapsed) ...[
-              const SizedBox(width: 10),
-              Text(
-                AppConfig.appName,
-                style: const TextStyle(
-                  color: _white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const Spacer(),
-              _SbIconBtn(
-                icon: Icons.menu_open_rounded,
-                onTap: onToggle,
-                size: 18,
-              ),
-            ] else ...[
-              // collapsed toggle accessible via tap on logo area
-            ],
-          ],
-        ),
+          ),
+          const Spacer(),
+          _SbIconBtn(icon: Icons.menu_open_rounded, onTap: onToggle, size: 18),
+        ]),
       ),
     );
   }
