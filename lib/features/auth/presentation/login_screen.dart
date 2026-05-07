@@ -64,12 +64,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       sub: 'Gérez votre établissement,\nsuivez les performances, connectez toute\nla communauté éducative.',
     ),
     _Slide(
-      lottie: 'assets/lottie/student.json',
+      lottie: 'assets/lottie/admin.json',
       title: 'Un espace dédié\nà chaque acteur.',
       sub: 'Élèves, parents, enseignants,\nadministrateurs — chaque rôle a son\ninterface optimisée.',
     ),
     _Slide(
-      lottie: 'assets/lottie/teacher.json',
+      lottie: 'assets/lottie/celebration.json',
       title: 'Multi-filiales,\nmulti-systèmes.',
       sub: 'Francophone, anglophone, LMD,\ntechnique — un seul outil pour\ntous les établissements.',
     ),
@@ -149,11 +149,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return Row(
       children: [
         Expanded(
-          flex: 55,
+          flex: 58,
           child: _LeftHero(slides: _slides),
         ),
         Expanded(
-          flex: 45,
+          flex: 42,
           child: _buildFormPanel(context),
         ),
       ],
@@ -177,69 +177,73 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
     return Container(
       color: const Color(0xFFFDFAF7),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 36),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _BrandMark(),
-            const SizedBox(height: 32),
+      child: LayoutBuilder(builder: (ctx, constraints) {
+        final hPad = constraints.maxWidth > 480 ? 32.0 : 22.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _BrandMark(),
+              const SizedBox(height: 24),
 
-            const Text('Connexion', style: TextStyle(
-              fontSize: 26, fontWeight: FontWeight.w900, color: _ink,
-            )),
-            const SizedBox(height: 4),
-            Text('Accédez à votre espace Scolaris',
-                style: TextStyle(color: _muted, fontSize: 13)),
-            const SizedBox(height: 28),
+              const Text('Connexion', style: TextStyle(
+                fontSize: 28, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -.3,
+              )),
+              const SizedBox(height: 3),
+              Text('Accédez à votre espace Scolaris',
+                  style: TextStyle(color: _muted, fontSize: 13)),
+              const SizedBox(height: 20),
 
-            Container(
-              decoration: BoxDecoration(
-                color: _white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _border.withOpacity(.5)),
-                boxShadow: [BoxShadow(color: _ink.withOpacity(.04), blurRadius: 20, offset: const Offset(0, 4))],
-              ),
-              child: Column(children: [
-                _tabBar(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: SizedBox(
-                    height: 380,
-                    child: TabBarView(
-                      controller: _tabCtrl,
-                      children: [
-                        _buildEmailForm(),
-                        _buildQrTab(),
-                      ],
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: _white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: _border.withOpacity(.5)),
+                  boxShadow: [BoxShadow(color: _ink.withOpacity(.05), blurRadius: 24, offset: const Offset(0, 6))],
+                ),
+                child: Column(children: [
+                  _tabBar(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
+                    child: SizedBox(
+                      height: 370,
+                      child: TabBarView(
+                        controller: _tabCtrl,
+                        children: [
+                          _buildEmailForm(),
+                          _buildQrTab(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ]),
-            ),
+                ]),
+              ),
 
-            const SizedBox(height: 24),
-            _divider('Comptes de démonstration'),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8, runSpacing: 8,
-              children: [
-                for (final r in _roles)
-                  _RoleChip(
-                    label: r.$3, icon: r.$2,
-                    selected: _selectedRole == r.$1,
-                    onTap: () => _selectRole(r.$1),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text('Mot de passe : demo1234',
-                  style: TextStyle(color: _muted.withOpacity(.6), fontSize: 11)),
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 20),
+              _divider('Comptes démo — accès rapide'),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 7, runSpacing: 7,
+                children: [
+                  for (final r in _roles)
+                    _RoleChip(
+                      label: r.$3, icon: r.$2,
+                      selected: _selectedRole == r.$1,
+                      onTap: () => _selectRole(r.$1),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text('Mot de passe universel : demo1234',
+                    style: TextStyle(color: _muted.withOpacity(.55), fontSize: 11)),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -499,18 +503,24 @@ class _LeftHeroState extends State<_LeftHero> with TickerProviderStateMixin {
           ),
         ),
 
-        // Full-panel Lottie (centered, large)
+        // Full-panel Lottie (centered, large) — ColorFiltered eliminates white backgrounds
         FadeTransition(
           opacity: _fadeAnim,
           child: Align(
-            alignment: const Alignment(0, -0.15),
+            alignment: const Alignment(0, -0.1),
             child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.52,
+              height: MediaQuery.sizeOf(context).height * 0.58,
               width: double.infinity,
-              child: Lottie.asset(
-                slide.lottie,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF0D3B1E),
+                  BlendMode.multiply,
+                ),
+                child: Lottie.asset(
+                  slide.lottie,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
               ),
             ),
           ),
