@@ -59,7 +59,7 @@ Tables: `schools`, `school_branches`, `school_founders`, `school_series`, `schoo
 ## Product
 
 - **Login** : e-mail/mot de passe + QR code carte étudiant + 6 rôles démo
-- **Inscription école** (7 étapes) : infos école · admin fondateur · système éducatif · séries/classes · base de données · design · récap
+- **Inscription école** (6 étapes) : infos école · admin fondateur · système éducatif · séries/classes · base de données · récap
 - **Espaces rôles** : étudiant · parent · enseignant · surveillance · finance · admin
 - **Multi-filiales** : gestion multi-campus par école
 - **Personnalisation** : couleurs, slug, logo par école
@@ -68,7 +68,12 @@ Tables: `schools`, `school_branches`, `school_founders`, `school_series`, `schoo
 
 - Design premium SaaS niveau africain (couleurs : terracotta #8B1A00, or #C17F24, vert #1B5E20)
 - Tous les textes en **français**
-- Inscription école = wizard 7 étapes avec stepper latéral (desktop) ou header (mobile)
+- Inscription école = wizard **6 étapes** (Design step supprimé) avec stepper latéral (desktop) ou header (mobile)
+- Types école = multi-select cards (Garderie, Primaire, Collège, Lycée, Université, Formation Pro, Grandes Écoles, Éducation Spéc.)
+- Téléphone = sélecteur indicatif pays (bottom sheet) + champ numéro
+- Filiales = infos complètes (pays+drapeau, indicatif, tél, ville, adresse, Maps link)
+- Admin step = style Facebook (bannière gradient+hexagones + photo de profil)
+- Login = animations Lottie fixées (ColorFiltered BlendMode.multiply élimine fond blanc)
 
 ## Gotchas
 
